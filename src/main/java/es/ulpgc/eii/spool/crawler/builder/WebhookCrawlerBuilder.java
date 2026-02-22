@@ -5,19 +5,23 @@ import es.ulpgc.eii.spool.crawler.api.PlatformEventSource;
 import es.ulpgc.eii.spool.crawler.api.strategy.WebhookCrawlerStrategy;
 import es.ulpgc.eii.spool.crawler.internal.utils.EventBuffer;
 import es.ulpgc.eii.spool.crawler.api.EventDeserializer;
+import es.ulpgc.eii.spool.crawler.internal.utils.ExceptionRouter;
 
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class WebhookCrawlerBuilder<R, T extends DomainEvent> extends BufferedCrawlerBuilder<R, T, WebhookCrawlerBuilder<R, T>> {
+    private final ExceptionRouter errorRouter;
 
     public WebhookCrawlerBuilder(PlatformEventSource platformBus, EventDeserializer<R, T> deserializer) {
         super(platformBus, deserializer);
+        this.errorRouter = buildRouter(SourceType.WEBHOOK);
     }
 
+    //TODO handle errors
     public WebhookCrawlerStrategy<R, T> createSource() {
         EventBuffer<T> buffer = EventBuffer.initialize();
-        Consumer<R> handler = consumerWith(buffer, SourceType.WEBHOOK);
+        Consumer<R> handler = consumerWith(buffer, errorRouter, SourceType.WEBHOOK);
         return new WebhookCrawlerStrategy<>() {
             @Override public void receive(R raw) {handler.accept(raw);}
             @Override public Stream<T> collect() {

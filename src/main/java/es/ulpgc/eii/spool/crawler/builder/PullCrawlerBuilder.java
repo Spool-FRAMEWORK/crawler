@@ -1,52 +1,54 @@
 package es.ulpgc.eii.spool.crawler.builder;
 
 import es.ulpgc.eii.spool.core.model.*;
+import es.ulpgc.eii.spool.crawler.api.exception.DuplicateEventException;
 import es.ulpgc.eii.spool.crawler.api.source.CrawlerSource;
 import es.ulpgc.eii.spool.crawler.api.PlatformEventSource;
 import es.ulpgc.eii.spool.crawler.api.strategy.PullCrawlerStrategy;
 import es.ulpgc.eii.spool.crawler.api.EventDeserializer;
+import es.ulpgc.eii.spool.crawler.internal.utils.ExceptionRouter;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class PullCrawlerBuilder<R, T extends DomainEvent> extends BaseCrawlerBuilder<R, T, PullCrawlerBuilder<R, T>> {
     private final CrawlerSource<R> source;
+    private final ExceptionRouter errorRouter;
 
     public PullCrawlerBuilder(PlatformEventSource platformBus, CrawlerSource<R> source, EventDeserializer<R, T> deserializer) {
         super(platformBus, deserializer);
         this.source = source;
+        this.errorRouter = buildRouter(SourceType.PULL);
     }
 
     public PullCrawlerStrategy<T> createSource() {
         return () -> {
             platformBus.emit(SourceStarted.of(SourceType.PULL));
-            Set<T> seen = new HashSet<>();
-            try {
-                return readWith(seen);
-            } catch (Exception e) {
-                platformBus.emit(SourceStopped.of(SourceType.PULL, e.getMessage()));
-                onError.accept(e);
-                return Stream.empty();
-            }
+            List<T> events = readAll();
+            platformBus.emit(SourceStopped.of(SourceType.PULL, null));
+            return events.stream();
         };
     }
 
-    private Stream<T> readWith(Set<T> seen) {
+    private List<T> readAll() {
+        Set<String> seenKeys = new HashSet<>();
         return source.read()
-                .flatMap(r -> {
-                    try {
-                        T event = deserializer.deserialize(r);
-                        platformBus.emit(EventReceived.of(event.id(), SourceType.PULL, event.toString().length()));
-                        if (!seen.add(event))
-                            platformBus.emit(EventDuplicated.of(event.id(), SourceType.PULL));
-                        onEvent.accept(event);
-                        return Stream.of(event);
-                    } catch (Exception e) {
-                        platformBus.emit(EventDeserializationFailed.of(r.toString(), e.getMessage(), SourceType.PULL));
-                        onError.accept(e);
-                        return Stream.empty();
-                    }
-                });
+                .flatMap(r -> toEvent(r, seenKeys))
+                .toList();
+    }
+
+    private Stream<T> toEvent(R r, Set<String> seenKeys) {
+        try {
+            T event = deserializer.deserialize(r);
+            if (!seenKeys.add(event.idempotencyKey())) throw new DuplicateEventException(event.idempotencyKey());
+            platformBus.emit(EventReceived.of(event.correlationId(), SourceType.PULL, getPayloadSize(r)));
+            onEvent.accept(event);
+            return Stream.of(event);
+        } catch (Exception e) {
+            errorRouter.dispatch(e);
+            return Stream.empty();
+        }
     }
 }

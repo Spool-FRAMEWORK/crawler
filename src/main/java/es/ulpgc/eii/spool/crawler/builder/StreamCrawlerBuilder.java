@@ -7,6 +7,7 @@ import es.ulpgc.eii.spool.crawler.api.EventSource;
 import es.ulpgc.eii.spool.crawler.api.strategy.StreamCrawlerStrategy;
 import es.ulpgc.eii.spool.crawler.internal.utils.EventBuffer;
 import es.ulpgc.eii.spool.crawler.api.EventDeserializer;
+import es.ulpgc.eii.spool.crawler.internal.utils.ExceptionRouter;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -14,15 +15,18 @@ import java.util.stream.Stream;
 
 public class StreamCrawlerBuilder<R, T extends DomainEvent> extends BufferedCrawlerBuilder<R, T, StreamCrawlerBuilder<R, T>> {
     private final StreamSource<R> source;
+    private final ExceptionRouter errorRouter;
 
     public StreamCrawlerBuilder(PlatformEventSource platformBus, StreamSource<R> source, EventDeserializer<R, T> deserializer) {
         super(platformBus, deserializer);
         this.source = source;
+        this.errorRouter = buildRouter(SourceType.STREAM);
     }
 
+    //TODO separate method to gain readability
     public StreamCrawlerStrategy<T> createSource() {
         EventBuffer<T> buffer = EventBuffer.initialize();
-        Consumer<R> handler = consumerWith(buffer, SourceType.STREAM);
+        Consumer<R> handler = consumerWith(buffer, errorRouter, SourceType.STREAM);
         AtomicBoolean closed = new AtomicBoolean(true);
         return new StreamCrawlerStrategy<T>() {
             @Override
@@ -43,8 +47,8 @@ public class StreamCrawlerBuilder<R, T extends DomainEvent> extends BufferedCraw
             @Override
             public void close() {
                 source.stop();
-                platformBus.emit(SourceStopped.of(SourceType.STREAM, null));
                 closed.set(true);
+                platformBus.emit(SourceStopped.of(SourceType.STREAM, null));
             }
         };
     }
