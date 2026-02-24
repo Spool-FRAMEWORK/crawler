@@ -11,7 +11,7 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>Crawler framework for event driven systems</description>
-    <url>https://github.com/TFT-Framework/spool-crawler</url>
+    <url>https://github.com/Spool-FRAMEWORK/spool-crawler</url>
 
     <licenses>
         <license>
@@ -30,9 +30,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:TFT-Framework/spool-crawler.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/TFT-Framework/spool-crawler.git</developerConnection>
-        <url>https://github.com/TFT-Framework/spool-crawler</url>
+        <connection>scm:git:git@github.com:Spool-FRAMEWORK/spool-crawler.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Spool-FRAMEWORK/spool-crawler.git</developerConnection>
+        <url>https://github.com/Spool-FRAMEWORK/spool-crawler</url>
     </scm>
 
     <properties>
@@ -43,8 +43,8 @@
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>TFT-Framework GitHub Packages</name>
-            <url>https://maven.pkg.github.com/TFT-Framework/packages</url>
+            <name>Spool-FRAMEWORK GitHub Packages</name>
+            <url>https://maven.pkg.github.com/Spool-FRAMEWORK/packages</url>
         </repository>
     </distributionManagement>
 
