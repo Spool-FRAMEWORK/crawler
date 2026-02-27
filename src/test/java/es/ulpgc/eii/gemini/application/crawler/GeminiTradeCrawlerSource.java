@@ -1,0 +1,33 @@
+package es.ulpgc.eii.gemini.application.crawler;
+
+import es.ulpgc.eii.spool.crawler.api.exception.SpoolException;
+import es.ulpgc.eii.spool.crawler.api.source.PullSource;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class GeminiTradeCrawlerSource implements PullSource<String> {
+    private static final String API_URL = "https://api.gemini.com/v1/trades/btcusd?limit_trades=10";
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+
+    @Override
+    public String poll() throws SpoolException {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(API_URL))
+                    .GET()
+                    .build();
+
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching trades from Gemini", e);
+        }
+    }
+
+    @Override
+    public String sourceId() {
+        return "geminiTradeCrawlerSource";
+    }
+}

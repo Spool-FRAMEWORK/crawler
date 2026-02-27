@@ -6,5 +6,9 @@ public class DeserializationException extends SpoolException {
         super("Deserialization failed for: " + rawPayload, cause);
         this.rawPayload = rawPayload;
     }
+    public DeserializationException(String message, String rawPayload) {
+        super(message);
+        this.rawPayload = rawPayload;
+    }
     public String rawPayload() { return rawPayload; }
 }

@@ -1,25 +1,29 @@
 package es.ulpgc.eii.spool.core.model;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 public record DataWrittenToInbox(
+        String eventId,
         Instant timestamp,
+        String eventType,
         String source,
         String errorMessage,
-        String payload,
-        UUID idempotencyKey
+        String idempotencyKey,
+        Optional<String> payload
+) implements SpoolEvent {
 
-) implements FrameworkEvent {
     public static DataWrittenToInboxBuilder from(String source) {
         return new DataWrittenToInboxBuilder(source);
     }
 
-    protected static class DataWrittenToInboxBuilder {
+    public static class DataWrittenToInboxBuilder {
+
         private final String source;
         private String errorMessage;
         private String payload;
-        private UUID idempotencyKey;
+        private String idempotencyKey;
 
         public DataWrittenToInboxBuilder(String source) {
             this.source = source;
@@ -35,13 +39,21 @@ public record DataWrittenToInbox(
             return this;
         }
 
-        public DataWrittenToInboxBuilder withIdempotencyKey(UUID idempotencyKey) {
+        public DataWrittenToInboxBuilder withIdempotencyKey(String idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }
 
         public DataWrittenToInbox create() {
-            return new DataWrittenToInbox(Instant.now(), source, errorMessage, payload, idempotencyKey);
+            return new DataWrittenToInbox(
+                    UUID.randomUUID().toString(),          // eventId
+                    Instant.now(),                         // timestamp
+                    "DataWrittenToInbox",                  // eventType
+                    source,
+                    errorMessage,
+                    idempotencyKey,
+                    Optional.ofNullable(payload)           // payload como Optional
+            );
         }
     }
 }
