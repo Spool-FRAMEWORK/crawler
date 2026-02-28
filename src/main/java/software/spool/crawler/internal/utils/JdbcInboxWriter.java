@@ -1,8 +1,8 @@
 package software.spool.crawler.internal.utils;
 
 import software.spool.crawler.api.exception.InboxWriteException;
-import software.spool.crawler.internal.port.InboxWriter;
-import software.spool.crawler.api.source.InboxEntryId;
+import software.spool.crawler.api.port.InboxEntryId;
+import software.spool.crawler.api.port.InboxWriter;
 import software.spool.model.RawDataReadFromSource;
 
 import java.lang.RuntimeException;
@@ -28,8 +28,7 @@ public class JdbcInboxWriter implements InboxWriter {
             conn.setAutoCommit(false);
 
             stmt = conn.prepareStatement(
-                    "INSERT INTO spool_inbox.events (source, payload) VALUES (?, ?::jsonb) RETURNING id"
-            );
+                    "INSERT INTO spool_inbox.events (source, payload) VALUES (?, ?::jsonb) RETURNING id");
 
             stmt.setString(1, event.sender());
 
@@ -62,9 +61,21 @@ public class JdbcInboxWriter implements InboxWriter {
             throw new InboxWriteException("Failed to insert RawInboxEvent: " + e.getMessage(), e);
         } finally {
             // Cleanup en orden inverso
-            if (rs != null) try { rs.close(); } catch (SQLException ignored) {}
-            if (stmt != null) try { stmt.close(); } catch (SQLException ignored) {}
-            if (conn != null) try { conn.close(); } catch (SQLException ignored) {}
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException ignored) {
+                }
+            if (stmt != null)
+                try {
+                    stmt.close();
+                } catch (SQLException ignored) {
+                }
+            if (conn != null)
+                try {
+                    conn.close();
+                } catch (SQLException ignored) {
+                }
         }
     }
 }

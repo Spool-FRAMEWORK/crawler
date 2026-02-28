@@ -2,8 +2,8 @@ package software.spool.crawler.internal.utils;
 
 import software.spool.model.RawDataReadFromSource;
 import software.spool.crawler.api.exception.SpoolException;
-import software.spool.crawler.internal.port.InboxWriter;
-import software.spool.crawler.api.source.InboxEntryId;
+import software.spool.crawler.api.port.InboxEntryId;
+import software.spool.crawler.api.port.InboxWriter;
 
 import java.util.HashMap;
 import java.util.Map;

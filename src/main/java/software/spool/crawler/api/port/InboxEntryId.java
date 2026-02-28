@@ -1,4 +1,4 @@
-package software.spool.crawler.api.source;
+package software.spool.crawler.api.port;
 
 public record InboxEntryId(String value) {
     public static InboxEntryId of(String id) {

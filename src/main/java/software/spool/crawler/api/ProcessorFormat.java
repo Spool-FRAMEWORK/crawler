@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.api;
 
 import software.spool.crawler.internal.utils.factory.Transformer;
 

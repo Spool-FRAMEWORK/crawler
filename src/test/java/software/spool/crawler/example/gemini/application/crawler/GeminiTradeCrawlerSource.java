@@ -1,5 +1,6 @@
-package es.ulpgc.eii.gemini.application.crawler;
+package software.spool.crawler.example.gemini.application.crawler;
 
+import software.spool.crawler.api.exception.SourcePollException;
 import software.spool.crawler.api.exception.SpoolException;
 import software.spool.crawler.api.source.PollSource;
 
@@ -22,7 +23,7 @@ public class GeminiTradeCrawlerSource implements PollSource<String> {
 
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
         } catch (Exception e) {
-            throw new RuntimeException("Error fetching trades from Gemini", e);
+            throw new SourcePollException("Error fetching trades from Gemini", e);
         }
     }
 

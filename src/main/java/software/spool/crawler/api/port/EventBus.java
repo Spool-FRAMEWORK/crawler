@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.port;
+package software.spool.crawler.api.port;
 
 import software.spool.crawler.api.exception.BusEmitException;
 import software.spool.model.SpoolEvent;

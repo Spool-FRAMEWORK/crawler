@@ -1,10 +1,10 @@
 package software.spool.crawler.api.dsl;
 
+import software.spool.crawler.api.ProcessorFormat;
 import software.spool.crawler.api.source.PollSource;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
-import software.spool.crawler.api.strategy.PollCrawlerStrategy;
+import software.spool.crawler.internal.strategy.PollCrawlerStrategy;
 import software.spool.crawler.internal.utils.CrawlerPorts;
-import software.spool.crawler.internal.utils.ProcessorFormat;
 import software.spool.crawler.internal.utils.factory.Transformer;
 
 public class PollSourceStep<R, T, O> {
