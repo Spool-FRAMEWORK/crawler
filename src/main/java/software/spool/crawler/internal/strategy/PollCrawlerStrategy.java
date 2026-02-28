@@ -96,7 +96,7 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
         } catch (InboxWriteException e) {
             throw e;
         } catch (Exception e) {
-            throw new InboxWriteException("Unexpected error writing to inbox", e);
+            throw new InboxWriteException("Unexpected error writing to inbox: " + e.getMessage(), e);
         }
     }
 }
