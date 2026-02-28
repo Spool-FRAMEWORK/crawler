@@ -1,14 +1,14 @@
 package es.ulpgc.eii.gemini.application.crawler;
 
 import software.spool.crawler.api.exception.SpoolException;
-import software.spool.crawler.api.source.PullSource;
+import software.spool.crawler.api.source.PollSource;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class GeminiTradeCrawlerSource implements PullSource<String> {
+public class GeminiTradeCrawlerSource implements PollSource<String> {
     private static final String API_URL = "https://api.gemini.com/v1/trades/btcusd?limit_trades=10";
     private final HttpClient httpClient = HttpClient.newHttpClient();
 

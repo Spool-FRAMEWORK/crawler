@@ -3,8 +3,8 @@ package software.spool.crawler.api.source;
 import software.spool.crawler.internal.port.Source;
 import software.spool.crawler.api.exception.SpoolException;
 
-public interface PullSource<R> extends Source {
+public interface PollSource<R> extends Source {
     R poll() throws SpoolException;
-    default PullSource<R> open()  { return this; }
+    default PollSource<R> open()  { return this; }
     String sourceId();
 }

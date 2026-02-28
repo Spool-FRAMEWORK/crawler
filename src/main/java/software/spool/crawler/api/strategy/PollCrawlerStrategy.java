@@ -6,17 +6,17 @@ import software.spool.crawler.internal.utils.CrawlerPorts;
 import software.spool.crawler.internal.utils.factory.Transformer;
 import software.spool.model.RawDataWrittenToInbox;
 import software.spool.model.RawDataReadFromSource;
-import software.spool.crawler.api.source.PullSource;
+import software.spool.crawler.api.source.PollSource;
 
 import java.util.stream.Stream;
 
-public class PullCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements CrawlerStrategy {
-    private final PullSource<R> source;
+public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements CrawlerStrategy {
+    private final PollSource<R> source;
     private final Transformer<R, T, O> transformer;
     private final CrawlerPorts ports;
     private final String sender;
 
-    public PullCrawlerStrategy(PullSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports, String sender) {
+    public PollCrawlerStrategy(PollSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports, String sender) {
         super(ports.bus(), sender, ports.errorRouter());
         this.source = source;
         this.transformer = transformer;
@@ -26,18 +26,18 @@ public class PullCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
 
     @Override
     public void execute() throws SpoolException {
-        try (PullSource<R> source = this.source.open()) {
+        try (PollSource<R> source = this.source.open()) {
             safeSplit(safeDeserialize(safePoll(source)), sender).forEach(r -> safeProcess(r, sender));
         } catch (Exception e) {
             errorRouter.dispatch(e);
         }
     }
 
-    private R safePoll(PullSource<R> source) {
+    private R safePoll(PollSource<R> source) {
         try {
             return source.poll();
         } catch (SourcePollException e) { throw e; }
-        catch (Exception e) { throw new SourcePollException(sender, e); }
+        catch (Exception e) { throw new SourcePollException("Error while polling from source: " + source.sourceId(), e); }
     }
 
     private T safeDeserialize(R raw) {
