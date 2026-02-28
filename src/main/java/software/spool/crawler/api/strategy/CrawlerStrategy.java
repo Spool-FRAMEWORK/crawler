@@ -1,5 +1,7 @@
 package software.spool.crawler.api.strategy;
 
+import software.spool.crawler.api.exception.SpoolException;
+
 public interface CrawlerStrategy {
-    void execute();
+    void execute() throws SpoolException;
 }

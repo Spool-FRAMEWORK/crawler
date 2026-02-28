@@ -1,4 +1,4 @@
-package software.spool.crawler.api;
+package software.spool.crawler.internal.port;
 
 import software.spool.crawler.api.exception.SpoolException;
 

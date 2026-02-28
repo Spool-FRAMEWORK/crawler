@@ -1,58 +1,48 @@
 package software.spool.model;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 public record RawDataWrittenToInbox(
         String eventId,
         Instant timestamp,
         String eventType,
-        String source,
-        String errorMessage,
+        String sender,
         String idempotencyKey,
-        Optional<String> payload
+        String payload
 ) implements SpoolEvent {
 
-    public static DataWrittenToInboxBuilder from(String source) {
-        return new DataWrittenToInboxBuilder(source);
+    public static Builder from(String source) {
+        return new Builder(source);
     }
 
-    public static class DataWrittenToInboxBuilder {
-
-        private final String source;
-        private String errorMessage;
+    public static class Builder {
+        private final String sender;
         private String payload;
         private String idempotencyKey;
 
-        public DataWrittenToInboxBuilder(String source) {
-            this.source = source;
+        public Builder(String sender) {
+            this.sender = sender;
         }
 
-        public DataWrittenToInboxBuilder withErrorMessage(String errorMessage) {
-            this.errorMessage = errorMessage;
-            return this;
-        }
-
-        public DataWrittenToInboxBuilder withPayload(String payload) {
+        public Builder withPayload(String payload) {
             this.payload = payload;
             return this;
         }
 
-        public DataWrittenToInboxBuilder withIdempotencyKey(String idempotencyKey) {
+        public Builder withIdempotencyKey(String idempotencyKey) {
             this.idempotencyKey = idempotencyKey;
             return this;
         }
 
         public RawDataWrittenToInbox create() {
             return new RawDataWrittenToInbox(
-                    UUID.randomUUID().toString(),          // eventId
-                    Instant.now(),                         // timestamp
-                    "DataWrittenToInbox",                  // eventType
-                    source,
-                    errorMessage,
+                    UUID.randomUUID().toString(),
+                    Instant.now(),
+                    "DataWrittenToInbox",
+                    sender,
                     idempotencyKey,
-                    Optional.ofNullable(payload)           // payload como Optional
+                    payload
             );
         }
     }

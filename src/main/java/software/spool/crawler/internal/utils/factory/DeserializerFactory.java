@@ -1,9 +1,9 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import software.spool.crawler.api.SourceDeserializer;
+import software.spool.crawler.internal.port.SourceDeserializer;
 import software.spool.crawler.api.exception.DeserializationException;
 
 import java.util.LinkedHashMap;

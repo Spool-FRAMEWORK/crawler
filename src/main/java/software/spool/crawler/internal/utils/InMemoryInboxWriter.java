@@ -2,17 +2,17 @@ package software.spool.crawler.internal.utils;
 
 import software.spool.model.RawDataReadFromSource;
 import software.spool.crawler.api.exception.SpoolException;
-import software.spool.crawler.api.source.Inbox;
+import software.spool.crawler.internal.port.InboxWriter;
 import software.spool.crawler.api.source.InboxEntryId;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class InMemoryInbox implements Inbox {
+public class InMemoryInboxWriter implements InboxWriter {
     private final Map<UUID, RawDataReadFromSource> inbox;
 
-    public InMemoryInbox() {
+    public InMemoryInboxWriter() {
         inbox = new HashMap<>();
     }
 

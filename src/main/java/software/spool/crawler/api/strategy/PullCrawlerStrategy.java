@@ -1,52 +1,85 @@
 package software.spool.crawler.api.strategy;
 
+import software.spool.crawler.api.exception.*;
+import software.spool.crawler.api.source.InboxEntryId;
+import software.spool.crawler.internal.utils.CrawlerPorts;
+import software.spool.crawler.internal.utils.factory.Transformer;
 import software.spool.model.RawDataWrittenToInbox;
 import software.spool.model.RawDataReadFromSource;
-import software.spool.model.SourceFailed;
-import software.spool.crawler.api.EventBus;
-import software.spool.crawler.api.SourceDeserializer;
-import software.spool.crawler.api.SourceSerializer;
-import software.spool.crawler.api.SourceSplitter;
-import software.spool.crawler.api.source.Inbox;
-import software.spool.crawler.api.source.InboxEntryId;
 import software.spool.crawler.api.source.PullSource;
 
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
-public class PullCrawlerStrategy<R, T, O> implements CrawlerStrategy {
+public class PullCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements CrawlerStrategy {
     private final PullSource<R> source;
-    private final SourceDeserializer<R, T> deserializer;
-    private final SourceSplitter<T, O> splitter;
-    private final SourceSerializer<O> serializer;
-    private final Inbox inbox;
-    private final EventBus bus;
+    private final Transformer<R, T, O> transformer;
+    private final CrawlerPorts ports;
+    private final String sender;
 
-    public PullCrawlerStrategy(PullSource<R> source, SourceDeserializer<R, T> deserializer, SourceSplitter<T, O> splitter, SourceSerializer<O> serializer, Inbox inbox, EventBus bus) {
+    public PullCrawlerStrategy(PullSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports, String sender) {
+        super(ports.bus(), sender, ports.errorRouter());
         this.source = source;
-        this.deserializer = deserializer;
-        this.splitter = splitter;
-        this.serializer = serializer;
-        this.inbox = inbox;
-        this.bus = bus;
-
+        this.transformer = transformer;
+        this.ports = ports;
+        this.sender = sender;
     }
 
-    public void execute() {
+    @Override
+    public void execute() throws SpoolException {
         try (PullSource<R> source = this.source.open()) {
-            R raw = source.poll();
-            Stream<O> pepe = splitter.split(deserializer.deserialize(raw), source.sourceId());
-            pepe.forEach(record -> {
-                String wrap = serializer.wrap(record, source.sourceId());
-                InboxEntryId id = inbox.receive(RawDataReadFromSource.builder().payload(wrap).sourceId(source.sourceId()).build());
-                bus.emit(RawDataWrittenToInbox.from(source.sourceId())
-                        .withIdempotencyKey(id.id())
-                        .create());
-            });
-        }  catch (Exception e) {
-            bus.emit(new SourceFailed(UUID.randomUUID().toString(), "SOURCE_FAILED", Instant.now(), Optional.of(e.getMessage())));
+            safeSplit(safeDeserialize(safePoll(source)), sender).forEach(r -> safeProcess(r, sender));
+        } catch (Exception e) {
+            errorRouter.dispatch(e);
         }
+    }
+
+    private R safePoll(PullSource<R> source) {
+        try {
+            return source.poll();
+        } catch (SourcePollException e) { throw e; }
+        catch (Exception e) { throw new SourcePollException(sender, e); }
+    }
+
+    private T safeDeserialize(R raw) {
+        try {
+            return transformer.deserializer().deserialize(raw);
+        } catch (DeserializationException e) { throw e; }
+        catch (Exception e) { throw new DeserializationException("Unexpected error in deserializer", e); }
+    }
+
+    private Stream<O> safeSplit(T deserialized, String sender) {
+        try {
+            return transformer.splitter().split(deserialized, sender);
+        } catch (SourceSplitException e) { throw e; }
+        catch (Exception e) { throw new SourceSplitException("Unexpected error in splitter", String.valueOf(deserialized), e); }
+    }
+
+    private void safeProcess(O record, String sender) {
+        try {
+            String payload = safeSerialize(record, sender);
+            ports.bus().emit(RawDataWrittenToInbox.from(sender)
+                    .withIdempotencyKey(safeWrite(payload, sender).value())
+                    .withPayload(payload)
+                    .create());
+        } catch (SpoolException e) {
+            errorRouter.dispatch(e);
+        }
+    }
+
+    private String safeSerialize(O record, String sender) {
+        try {
+            return transformer.serializer().serialize(record, sender);
+        } catch (SerializationException e) { throw e; }
+        catch (Exception e) { throw new SerializationException("Unexpected error in serializer", String.valueOf(record), e); }
+    }
+
+    private InboxEntryId safeWrite(String payload, String sender) {
+        try {
+            return ports.inboxWriter().receive(RawDataReadFromSource.builder()
+                    .payload(payload)
+                    .sender(this.sender)
+                    .build());
+        } catch (InboxWriteException e) { throw e; }
+        catch (Exception e) { throw new InboxWriteException("Unexpected error writing to inbox", e); }
     }
 }

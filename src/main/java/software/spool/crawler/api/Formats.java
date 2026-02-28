@@ -1,6 +1,8 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import software.spool.crawler.internal.utils.ProcessorFormat;
+import software.spool.crawler.internal.utils.factory.TransformerFactory;
 
 import java.sql.ResultSet;
 import java.util.Map;

@@ -1,7 +1,6 @@
 package software.spool.model;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 public record RawDataReadFromSource(
@@ -9,7 +8,7 @@ public record RawDataReadFromSource(
         String eventType,
         Instant timestamp,
         String sender,
-        Optional<String> payload
+        String payload
 ) implements SpoolEvent {
 
     public RawDataReadFromSource {
@@ -32,39 +31,29 @@ public record RawDataReadFromSource(
     }
 
     public static class Builder {
+        private String sender;
+        private String payload;
 
-        private String sourceId;
-        private Optional<String> payload = Optional.empty();
-
-        public Builder sourceId(String sourceId) {
-            this.sourceId = sourceId;
+        public Builder sender(String sender) {
+            this.sender = sender;
             return this;
         }
 
         public Builder payload(String payload) {
-            this.payload = Optional.ofNullable(payload);
-            return this;
-        }
-
-        public Builder payload(Optional<String> payload) {
             this.payload = payload;
             return this;
         }
 
         public RawDataReadFromSource build() {
-            if (sourceId == null || sourceId.isBlank()) {
+            if (sender == null || sender.isBlank()) {
                 throw new IllegalArgumentException("sender is required");
             }
 
-            String eventId = UUID.randomUUID().toString();
-            String eventType = "RAW_INBOX_ITEM";
-            Instant timestamp = Instant.now();
-
             return new RawDataReadFromSource(
-                    eventId,
-                    eventType,
-                    timestamp,
-                    sourceId,
+                    UUID.randomUUID().toString(),
+                    "RAW_DATA_READ_FROM_SOURCE",
+                    Instant.now(),
+                    sender,
                     payload
             );
         }

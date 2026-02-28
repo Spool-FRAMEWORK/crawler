@@ -1,4 +1,4 @@
-package software.spool.crawler.api;
+package software.spool.crawler.internal.port;
 
 public interface Source extends AutoCloseable {
     String sourceId();

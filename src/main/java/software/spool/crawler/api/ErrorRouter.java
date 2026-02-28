@@ -1,10 +1,10 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.api;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ExceptionRouter {
+public class ErrorRouter {
 
     private record Entry<E extends Exception>(Class<E> type, Consumer<E> handler) {
         @SuppressWarnings("unchecked")
@@ -17,12 +17,12 @@ public class ExceptionRouter {
     private final List<Entry<?>> entries = new ArrayList<>();
     private Consumer<Exception> fallback = e -> {};
 
-    public <E extends Exception> ExceptionRouter on(Class<E> type, Consumer<E> handler) {
+    public <E extends Exception> ErrorRouter on(Class<E> type, Consumer<E> handler) {
         entries.add(new Entry<>(type, handler));
         return this;
     }
 
-    public ExceptionRouter orElse(Consumer<Exception> fallback) {
+    public ErrorRouter orElse(Consumer<Exception> fallback) {
         this.fallback = fallback;
         return this;
     }

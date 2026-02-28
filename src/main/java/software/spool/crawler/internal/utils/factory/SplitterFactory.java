@@ -1,8 +1,8 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import software.spool.crawler.api.SourceSplitter;
-import software.spool.crawler.api.exception.SplitException;
+import software.spool.crawler.api.exception.SourceSplitException;
+import software.spool.crawler.internal.port.SourceSplitter;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -17,10 +17,9 @@ import java.util.stream.StreamSupport;
 public class SplitterFactory {
     public static SourceSplitter<JsonNode, JsonNode> jsonArray() {
         return (parsed, source) -> {
-            if (parsed.isArray()) {
+            if (parsed.isArray())
                 return StreamSupport.stream(parsed.spliterator(), false);
-            }
-            throw new SplitException("Expected JsonNode array");
+            throw new SourceSplitException("Expected JsonNode array, got: " + parsed.getNodeType().name(), parsed.toString());
         };
     }
 
@@ -56,7 +55,7 @@ public class SplitterFactory {
                         nextRow = rowToMap(rs);
                     }
                 } catch (SQLException e) {
-                    throw new SplitException("ResultSet hasNext failed", e);
+                    throw new SourceSplitException("ResultSet hasNext failed", null, e);
                 }
             }
             return hasNext;
