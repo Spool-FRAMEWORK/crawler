@@ -2,7 +2,7 @@ package software.spool.crawler.api.dsl;
 
 import software.spool.crawler.api.ErrorRouter;
 import software.spool.crawler.api.ProcessorFormat;
-import software.spool.crawler.api.port.EventBus;
+import software.spool.crawler.api.port.EventBusEmitter;
 import software.spool.crawler.api.port.InboxWriter;
 import software.spool.crawler.api.source.PollSource;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
@@ -39,7 +39,7 @@ public class PollSourceStep<R, T, O> {
         return this;
     }
 
-    public PollSourceStep<R, T, O> bus(EventBus bus) {
+    public PollSourceStep<R, T, O> bus(EventBusEmitter bus) {
         this.ports = getPorts(bus, ports.inboxWriter(), ports.errorRouter());
         return this;
     }
@@ -54,7 +54,7 @@ public class PollSourceStep<R, T, O> {
         return this;
     }
 
-    private CrawlerPorts getPorts(EventBus bus, InboxWriter inboxWriter, ErrorRouter errorRouter) {
+    private CrawlerPorts getPorts(EventBusEmitter bus, InboxWriter inboxWriter, ErrorRouter errorRouter) {
         return CrawlerPorts.builder()
                 .bus(bus)
                 .inbox(inboxWriter)

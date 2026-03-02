@@ -2,17 +2,17 @@ package software.spool.crawler.api.strategy;
 
 import software.spool.crawler.api.ErrorRouter;
 import software.spool.core.exception.*;
-import software.spool.crawler.api.port.EventBus;
+import software.spool.crawler.api.port.EventBusEmitter;
 import software.spool.core.model.*;
 
 import java.util.Objects;
 
 public class BaseCrawlerStrategy implements CrawlerStrategy {
-        private final EventBus bus;
+        private final EventBusEmitter bus;
         private final String sender;
         protected final ErrorRouter errorRouter;
 
-        public BaseCrawlerStrategy(EventBus bus, String sender, ErrorRouter errorRouter) {
+        public BaseCrawlerStrategy(EventBusEmitter bus, String sender, ErrorRouter errorRouter) {
                 this.bus = bus;
                 this.sender = sender;
                 this.errorRouter = Objects.isNull(errorRouter) ? initializeErrorRouter() : errorRouter;

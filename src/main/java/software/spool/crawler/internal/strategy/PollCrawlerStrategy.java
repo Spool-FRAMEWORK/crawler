@@ -17,8 +17,7 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
     private final CrawlerPorts ports;
     private final String sender;
 
-    public PollCrawlerStrategy(PollSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports,
-            String sender) {
+    public PollCrawlerStrategy(PollSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports, String sender) {
         super(ports.bus(), sender, ports.errorRouter());
         this.source = source;
         this.transformer = transformer;

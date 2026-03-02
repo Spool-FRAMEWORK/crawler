@@ -1,12 +1,12 @@
 package software.spool.crawler.internal.utils;
 
 import software.spool.crawler.api.ErrorRouter;
-import software.spool.crawler.api.port.EventBus;
+import software.spool.crawler.api.port.EventBusEmitter;
 import software.spool.crawler.api.port.InboxWriter;
 
 public class CrawlerPorts {
     private final InboxWriter inboxWriter;
-    private final EventBus bus;
+    private final EventBusEmitter bus;
     private final ErrorRouter errorRouter;
 
     private CrawlerPorts(Builder builder) {
@@ -19,7 +19,7 @@ public class CrawlerPorts {
         return inboxWriter;
     }
 
-    public EventBus bus() {
+    public EventBusEmitter bus() {
         return bus;
     }
 
@@ -33,7 +33,7 @@ public class CrawlerPorts {
 
     public static class Builder {
         private InboxWriter inboxWriter;
-        private EventBus bus;
+        private EventBusEmitter bus;
         private ErrorRouter errorRouter;
 
         public Builder inbox(InboxWriter inboxWriter) {
@@ -41,7 +41,7 @@ public class CrawlerPorts {
             return this;
         }
 
-        public Builder bus(EventBus bus) {
+        public Builder bus(EventBusEmitter bus) {
             this.bus = bus;
             return this;
         }

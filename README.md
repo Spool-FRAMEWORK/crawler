@@ -225,7 +225,7 @@ crawler.execute();
 Supply your own infrastructure adapters via `CrawlerPorts`:
 
 ```java
-// Kafka EventBus
+// Kafka EventBusEmitter
 EventBus kafkaBus = event ->
     kafkaProducer.send(new ProducerRecord<>("spool-events", event.eventId(),
         objectMapper.writeValueAsString(event)));
