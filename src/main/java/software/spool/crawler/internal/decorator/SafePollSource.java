@@ -19,7 +19,7 @@ public class SafePollSource<R> implements PollSource<R> {
     public R poll() throws SpoolException {
         try {
             return source.poll();
-        } catch (Exception e) {
+        } catch (SpoolException e) { throw e; } catch (Exception e) {
             throw new SourcePollException("Source poll failed: " + e.getMessage(), e);
         }
     }

@@ -21,7 +21,7 @@ public class SafeSourceSplitter<I, O> implements SourceSplitter<I, O> {
     public Stream<O> split(I payload, String sourceId) throws SpoolException {
         try {
             return splitter.split(payload, sourceId);
-        } catch (Exception e) {
+        } catch (SpoolException e) { throw e; } catch (Exception e) {
             throw new SourceSplitException("Error while splitting: ", e.getMessage(), e);
         }
     }

@@ -1,6 +1,7 @@
 package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.DeserializationException;
+import software.spool.core.exception.SpoolException;
 import software.spool.crawler.internal.port.SourceDeserializer;
 
 public class SafeSourceDeserializer<R, T> implements SourceDeserializer<R, T> {
@@ -18,7 +19,7 @@ public class SafeSourceDeserializer<R, T> implements SourceDeserializer<R, T> {
     public T deserialize(R source) throws DeserializationException {
         try {
             return deserializer.deserialize(source);
-        } catch (Exception e) {
+        } catch (SpoolException e) { throw e; } catch (Exception e) {
             throw new DeserializationException("Error when deserializing: " + e.getMessage(), e);
         }
     }
