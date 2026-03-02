@@ -34,15 +34,11 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
     }
 
     private void process(O record, String sender) {
-        try {
-            String payload = serialize(record, sender);
-            ports.bus().emit(RawDataWrittenToInbox.from(sender)
-                    .withIdempotencyKey(writeToInbox(payload).value())
-                    .withPayload(payload)
-                    .create());
-        } catch (SpoolException e) {
-            errorRouter.dispatch(e);
-        }
+        String payload = serialize(record, sender);
+        ports.bus().emit(RawDataWrittenToInbox.from(sender)
+                .withIdempotencyKey(writeToInbox(payload).value())
+                .withPayload(payload)
+                .create());
     }
 
     private String serialize(O record, String sender) {
@@ -50,9 +46,11 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
     }
 
     private InboxEntryId writeToInbox(String payload) {
-        return ports.inboxWriter().receive(RawDataReadFromSource.builder()
+        RawDataReadFromSource rawDataReadEvent = RawDataReadFromSource.builder()
                 .payload(payload)
                 .sender(sender)
-                .build());
+                .build();
+        ports.bus().emit(rawDataReadEvent);
+        return ports.inboxWriter().receive(rawDataReadEvent);
     }
 }
