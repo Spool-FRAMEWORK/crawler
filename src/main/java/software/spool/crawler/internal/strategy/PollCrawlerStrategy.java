@@ -50,7 +50,8 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
                 .payload(payload)
                 .sender(sender)
                 .build();
+        InboxEntryId inboxEntryId = ports.inboxWriter().receive(rawDataReadEvent);
         ports.bus().emit(rawDataReadEvent);
-        return ports.inboxWriter().receive(rawDataReadEvent);
+        return inboxEntryId;
     }
 }
