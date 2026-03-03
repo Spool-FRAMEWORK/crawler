@@ -1,8 +1,8 @@
 package software.spool.crawler.api.port;
 
 import software.spool.core.exception.InboxWriteException;
-import software.spool.core.model.RawDataReadFromSource;
+import software.spool.core.model.SourceItemCaptured;
 
 public interface InboxWriter {
-    InboxEntryId receive(RawDataReadFromSource event) throws InboxWriteException;
+    String receive(String payload, String idempotencyKey) throws InboxWriteException;
 }

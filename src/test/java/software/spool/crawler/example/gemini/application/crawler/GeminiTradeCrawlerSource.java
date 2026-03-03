@@ -22,7 +22,7 @@ public class GeminiTradeCrawlerSource implements PollSource<String> {
 
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body();
         } catch (Exception e) {
-            throw new SourcePollException("Error fetching trades from Gemini", e);
+            throw new SourcePollException(sourceId(), e.getMessage());
         }
     }
 

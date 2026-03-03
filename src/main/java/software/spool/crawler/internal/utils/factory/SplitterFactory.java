@@ -55,7 +55,7 @@ public class SplitterFactory {
                         nextRow = rowToMap(rs);
                     }
                 } catch (SQLException e) {
-                    throw new SourceSplitException("ResultSet hasNext failed", null, e);
+                    throw new SourceSplitException("ResultSet hasNext failed", null);
                 }
             }
             return hasNext;

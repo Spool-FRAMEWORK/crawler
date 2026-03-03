@@ -2,8 +2,6 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.InboxWriteException;
 import software.spool.core.exception.SpoolException;
-import software.spool.core.model.RawDataReadFromSource;
-import software.spool.crawler.api.port.InboxEntryId;
 import software.spool.crawler.api.port.InboxWriter;
 
 public class SafeInboxWriter implements InboxWriter {
@@ -19,9 +17,9 @@ public class SafeInboxWriter implements InboxWriter {
     }
 
     @Override
-    public InboxEntryId receive(RawDataReadFromSource event) throws InboxWriteException {
+    public String receive(String payload, String idempotencyKey) throws InboxWriteException {
         try {
-            return inbox.receive(event);
+            return inbox.receive(payload, idempotencyKey);
         } catch (SpoolException e) { throw e; } catch (Exception e) {
             throw new InboxWriteException("Failed while writing to inbox: " + e.getMessage(), e);
         }

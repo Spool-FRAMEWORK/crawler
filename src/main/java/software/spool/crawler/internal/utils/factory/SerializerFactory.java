@@ -15,7 +15,7 @@ public class SerializerFactory {
             try {
                 return mapper.writeValueAsString(node);
             } catch (Exception e) {
-                throw new SerializationException("Failed to serialize JsonNode to payload", node.toString(), e);
+                throw new SerializationException(node.toString(), e);
             }
         };
     }
@@ -25,7 +25,7 @@ public class SerializerFactory {
             try {
                 return mapper.writeValueAsString(map);
             } catch (Exception e) {
-                throw new SerializationException("Failed to serialize Map to payload", map.toString(), e);
+                throw new SerializationException(map.toString(), e);
             }
         };
     }

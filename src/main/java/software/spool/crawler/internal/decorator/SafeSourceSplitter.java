@@ -22,7 +22,7 @@ public class SafeSourceSplitter<I, O> implements SourceSplitter<I, O> {
         try {
             return splitter.split(payload, sourceId);
         } catch (SpoolException e) { throw e; } catch (Exception e) {
-            throw new SourceSplitException("Error while splitting: ", e.getMessage(), e);
+            throw new SourceSplitException(e.getMessage(), payload.toString());
         }
     }
 }
