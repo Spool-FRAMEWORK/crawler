@@ -1,6 +1,8 @@
 package software.spool.crawler.internal.strategy;
 
 import software.spool.core.exception.*;
+import software.spool.crawler.api.port.SourceDeserializer;
+import software.spool.crawler.api.port.SourceSplitter;
 import software.spool.crawler.api.strategy.BaseCrawlerStrategy;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
 import software.spool.crawler.internal.utils.CrawlerPorts;
@@ -25,9 +27,9 @@ import java.util.HexFormat;
  * <li>Open the {@link PollSource} inside a try-with-resources block.</li>
  * <li>Call {@link PollSource#poll()} to fetch the raw payload.</li>
  * <li>Deserialize the raw payload via the configured
- * {@link software.spool.crawler.internal.port.SourceDeserializer}.</li>
+ * {@link SourceDeserializer}.</li>
  * <li>Split the deserialized value into individual records via the configured
- * {@link software.spool.crawler.internal.port.SourceSplitter}.</li>
+ * {@link SourceSplitter}.</li>
  * <li>For each record: serialize it, write it to the inbox, and emit
  * {@code SourceItemCaptured} and {@code InboxItemStored} events.</li>
  * <li>Route any {@link SpoolException} through the
@@ -106,7 +108,7 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
         SourceItemCaptured itemCapturedEvent = SourceItemCaptured.builder()
                 .senderId(sender)
                 .sourceId(source.sourceId())
-                .idempotencyKey(generateIdempotencyKeyFrom(payload))
+                .idempotencyKey(IdempotencyKey.of(source.sourceId(), payload))
                 .build();
         try {
             ports.inboxWriter().receive(payload, itemCapturedEvent.idempotencyKey());
@@ -114,29 +116,6 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
             ports.bus().emit(InboxItemStored.builder().from(itemCapturedEvent).build());
         } catch (Exception e) {
             throw new SpoolContextException(e, itemCapturedEvent);
-        }
-    }
-
-    /**
-     * Derives a deterministic idempotency key from the given payload.
-     *
-     * <p>
-     * The key is a lowercase hex SHA-256 digest of
-     * {@code sourceId + ":" + payload}.
-     * </p>
-     *
-     * @param payload the serialized record payload
-     * @return a 64-character hex string
-     * @throws IllegalStateException if the SHA-256 algorithm is not available
-     */
-    private String generateIdempotencyKeyFrom(String payload) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String input = source.sourceId() + ":" + payload;
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 not available", e);
         }
     }
 }

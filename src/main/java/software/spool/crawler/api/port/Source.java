@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.port;
+package software.spool.crawler.api.port;
 
 /**
  * Base internal interface for all types of data sources.

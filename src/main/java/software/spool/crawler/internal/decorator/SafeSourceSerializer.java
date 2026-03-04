@@ -2,7 +2,7 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.SerializationException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.internal.port.SourceSerializer;
+import software.spool.crawler.api.port.SourceSerializer;
 
 /**
  * Decorator for {@link SourceSerializer} that normalises unchecked exceptions
@@ -41,7 +41,7 @@ public class SafeSourceSerializer<T> implements SourceSerializer<T> {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new SerializationException("Error while serializing: " + e.getMessage(), record.toString());
+            throw new SerializationException(e.getMessage(), record.toString());
         }
     }
 }

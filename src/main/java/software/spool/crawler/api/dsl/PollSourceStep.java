@@ -108,7 +108,7 @@ public class PollSourceStep<R, T, O> {
      * Overrides the {@link EventBusEmitter} port.
      *
      * <p>
-     * The provided emitter is wrapped in {@link SafeEventBusEmitterEmitter}.
+     * The provided emitter is wrapped in {@link SafeEventBusEmitter}.
      * </p>
      *
      * @param bus the event bus emitter; must not be {@code null}
@@ -150,7 +150,7 @@ public class PollSourceStep<R, T, O> {
 
     private CrawlerPorts getPorts(EventBusEmitter bus, InboxWriter inboxWriter, ErrorRouter errorRouter) {
         return CrawlerPorts.builder()
-                .bus(SafeEventBusEmitterEmitter.of(bus))
+                .bus(SafeEventBusEmitter.of(bus))
                 .inbox(SafeInboxWriter.of(inboxWriter))
                 .errorRouter(errorRouter)
                 .build();

@@ -1,9 +1,9 @@
 package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import software.spool.crawler.internal.port.SourceDeserializer;
-import software.spool.crawler.internal.port.SourceSplitter;
-import software.spool.crawler.internal.port.SourceSerializer;
+import software.spool.crawler.api.port.SourceDeserializer;
+import software.spool.crawler.api.port.SourceSplitter;
+import software.spool.crawler.api.port.SourceSerializer;
 
 import java.sql.ResultSet;
 import java.util.Map;

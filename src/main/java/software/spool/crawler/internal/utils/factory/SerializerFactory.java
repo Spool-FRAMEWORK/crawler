@@ -2,7 +2,7 @@ package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.spool.crawler.internal.port.SourceSerializer;
+import software.spool.crawler.api.port.SourceSerializer;
 import software.spool.core.exception.SerializationException;
 
 import java.util.Map;

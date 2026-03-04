@@ -1,6 +1,6 @@
 package software.spool.crawler.api.source;
 
-import software.spool.crawler.internal.port.Source;
+import software.spool.crawler.api.port.Source;
 import software.spool.core.exception.SpoolException;
 
 /**

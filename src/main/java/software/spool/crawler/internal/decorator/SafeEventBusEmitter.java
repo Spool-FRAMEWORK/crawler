@@ -15,10 +15,10 @@ import software.spool.crawler.api.port.EventBusEmitter;
  * {@link Exception} is wrapped in a new {@link BusEmitException}.
  * </p>
  */
-public class SafeEventBusEmitterEmitter implements EventBusEmitter {
+public class SafeEventBusEmitter implements EventBusEmitter {
     private final EventBusEmitter bus;
 
-    private SafeEventBusEmitterEmitter(EventBusEmitter bus) {
+    private SafeEventBusEmitter(EventBusEmitter bus) {
         this.bus = bus;
     }
 
@@ -28,8 +28,8 @@ public class SafeEventBusEmitterEmitter implements EventBusEmitter {
      * @param bus the event bus emitter to wrap; must not be {@code null}
      * @return a new {@code SafeEventBusEmitterEmitter} instance
      */
-    public static SafeEventBusEmitterEmitter of(EventBusEmitter bus) {
-        return new SafeEventBusEmitterEmitter(bus);
+    public static SafeEventBusEmitter of(EventBusEmitter bus) {
+        return new SafeEventBusEmitter(bus);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class SafeEventBusEmitterEmitter implements EventBusEmitter {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new BusEmitException("An error occurred while emitting an event: " + e.getMessage(), e);
+            throw new BusEmitException(e.getMessage(), e);
         }
     }
 }

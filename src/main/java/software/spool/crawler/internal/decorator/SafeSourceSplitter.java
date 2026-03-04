@@ -2,7 +2,7 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.SourceSplitException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.internal.port.SourceSplitter;
+import software.spool.crawler.api.port.SourceSplitter;
 
 import java.util.stream.Stream;
 

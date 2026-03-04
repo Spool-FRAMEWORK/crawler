@@ -2,7 +2,7 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.internal.port.SourceDeserializer;
+import software.spool.crawler.api.port.SourceDeserializer;
 
 /**
  * Decorator for {@link SourceDeserializer} that normalises unchecked exceptions
@@ -37,13 +37,13 @@ public class SafeSourceDeserializer<R, T> implements SourceDeserializer<R, T> {
     }
 
     @Override
-    public T deserialize(R source) throws DeserializationException {
+    public T deserialize(R payload) throws DeserializationException {
         try {
-            return deserializer.deserialize(source);
+            return deserializer.deserialize(payload);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new DeserializationException("Error when deserializing: " + e.getMessage(), e);
+            throw new DeserializationException(payload.toString(), e);
         }
     }
 }

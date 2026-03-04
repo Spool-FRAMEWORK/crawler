@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.port;
+package software.spool.crawler.api.port;
 
 import software.spool.core.exception.DeserializationException;
 
@@ -24,10 +24,10 @@ public interface SourceDeserializer<R, T> {
     /**
      * Converts the given raw value into a typed intermediate object.
      *
-     * @param source the raw value to deserialize; may be {@code null} if the
+     * @param payload the raw value to deserialize; may be {@code null} if the
      *               source legitimately produces empty responses
      * @return the deserialized representation; must not be {@code null}
      * @throws DeserializationException if the value cannot be parsed or converted
      */
-    T deserialize(R source) throws DeserializationException;
+    T deserialize(R payload) throws DeserializationException;
 }

@@ -31,7 +31,7 @@ import java.util.Objects;
  * this behaviour.
  * </p>
  */
-public class BaseCrawlerStrategy implements CrawlerStrategy {
+public abstract class BaseCrawlerStrategy implements CrawlerStrategy {
         /** Event bus used to publish error events. */
         private final EventBusEmitter bus;
         /** Logical name of the component acting as sender in emitted events. */
@@ -60,40 +60,40 @@ public class BaseCrawlerStrategy implements CrawlerStrategy {
         }
 
         private ErrorRouter initializeErrorRouter() {
-                return new ErrorRouter().on(SourceOpenException.class,
+                return new ErrorRouter()
+                        .on(SourceOpenException.class,
                                 (e, cause) -> bus.emit(SourceFetchFailed.builder()
-                                                .senderId(sender)
-                                                .sourceId(sourceId)
-                                                .errorMessage(e.getMessage()).build()))
-                                .on(SourcePollException.class,
-                                                (e, cause) -> bus.emit(SourceFetchFailed.builder()
-                                                                .senderId(sender)
-                                                                .sourceId(sourceId)
-                                                                .errorMessage(e.getMessage()).build()))
-                                .on(DeserializationException.class,
-                                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                                                .senderId(sender)
-                                                                .sourceId(sourceId)
-                                                                .errorMessage(e.getMessage()).build()))
-                                .on(SourceSplitException.class,
-                                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                                                .senderId(sender)
-                                                                .sourceId(sourceId)
-                                                                .errorMessage(e.getMessage()).build()))
-                                .on(SerializationException.class,
-                                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                                                .senderId(sender)
-                                                                .sourceId(sourceId)
-                                                                .errorMessage(e.getMessage()).build()))
-                                .on(InboxWriteException.class,
-                                                (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
-                                                                .from(cause)
-                                                                .sourceId(sourceId)
-                                                                .senderId(sender)
-                                                                .errorMessage(e.getMessage()).build()));
+                                        .senderId(sender)
+                                        .sourceId(sourceId)
+                                        .errorMessage(e.getMessage()).build()))
+                        .on(SourcePollException.class,
+                                (e, cause) -> bus.emit(SourceFetchFailed.builder()
+                                        .senderId(sender)
+                                        .sourceId(sourceId)
+                                        .errorMessage(e.getMessage()).build()))
+                        .on(DeserializationException.class,
+                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
+                                        .senderId(sender)
+                                        .sourceId(sourceId)
+                                        .errorMessage(e.getMessage()).build()))
+                        .on(SourceSplitException.class,
+                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
+                                        .senderId(sender)
+                                        .sourceId(sourceId)
+                                        .errorMessage(e.getMessage()).build()))
+                        .on(SerializationException.class,
+                                (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
+                                        .senderId(sender)
+                                        .sourceId(sourceId)
+                                        .errorMessage(e.getMessage()).build()))
+                        .on(InboxWriteException.class,
+                                (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
+                                        .from(cause)
+                                        .sourceId(sourceId)
+                                        .senderId(sender)
+                                        .errorMessage(e.getMessage()).build()));
         }
 
         @Override
-        public void execute() throws SpoolException {
-        }
+        public abstract void execute() throws SpoolException;
 }

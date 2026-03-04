@@ -1,7 +1,7 @@
 package software.spool.crawler.api.port;
 
 import software.spool.core.exception.InboxWriteException;
-import software.spool.core.model.SourceItemCaptured;
+import software.spool.core.model.IdempotencyKey;
 
 /**
  * Port for writing captured payloads into the inbox.
@@ -9,7 +9,7 @@ import software.spool.core.model.SourceItemCaptured;
  * <p>
  * Implement this interface to connect the crawler to your storage backend
  * (database, message queue, file system, etc.). The crawler calls
- * {@link #receive(String, String)} once per processed record.
+ * {@link #receive(String, IdempotencyKey)} once per processed record.
  * </p>
  *
  * <p>
@@ -30,5 +30,5 @@ public interface InboxWriter {
      * @return the identifier assigned to the stored entry
      * @throws InboxWriteException if the entry could not be persisted
      */
-    String receive(String payload, String idempotencyKey) throws InboxWriteException;
+    IdempotencyKey receive(String payload, IdempotencyKey idempotencyKey) throws InboxWriteException;
 }
