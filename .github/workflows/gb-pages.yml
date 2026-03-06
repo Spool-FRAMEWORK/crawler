@@ -1,7 +1,7 @@
 name: Deploy Javadoc → GitHub Pages
 on:
   push:
-    branches: [ develop, main ]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
