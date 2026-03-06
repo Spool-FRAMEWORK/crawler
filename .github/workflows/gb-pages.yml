@@ -34,13 +34,12 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Create .nojekyll
-        run: touch target/site/apidocs/.nojekyll
+        run: touch target/reports/apidocs/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./target/site/apidocs
-
+          path: ./target/reports/apidocs
 
       - name: Deploy to GitHub Pages
         id: deployment
