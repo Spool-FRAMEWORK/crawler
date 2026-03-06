@@ -29,8 +29,9 @@ jobs:
 
       - name: Generate Javadoc
         run: |
-          mkdir -p doc
-          mvn javadoc:javadoc -DoutputDirectory=doc -Dquiet=true -DskipTests
+          mvn javadoc:javadoc -DskipTests -Dquiet=true \
+            -DreportOutputDirectory=. \
+            -Ddestdir=doc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
