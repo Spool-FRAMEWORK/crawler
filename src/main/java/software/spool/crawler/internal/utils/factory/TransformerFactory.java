@@ -1,6 +1,8 @@
 package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import software.spool.core.infrastructure.adapter.PayloadDeserializerFactory;
+import software.spool.core.infrastructure.adapter.RecordSerializerFactory;
 import software.spool.core.port.PayloadDeserializer;
 import software.spool.core.port.RecordSerializer;
 import software.spool.crawler.api.port.PayloadSplitter;
@@ -32,7 +34,7 @@ public class TransformerFactory {
      *
      * @return a {@link Transformer} for JSON array strings
      */
-    public static Transformer<String, JsonNode, JsonNode> jsonArray() {
+    public static Transformer<JsonNode, JsonNode> jsonArray() {
         return new Transformer<>(
                 PayloadDeserializerFactory.json(),
                 PayloadSplitterFactory.jsonArray(),
@@ -45,7 +47,7 @@ public class TransformerFactory {
      *
      * @return a {@link Transformer} for YAML array strings
      */
-    public static Transformer<String, JsonNode, JsonNode> yamlArray() {
+    public static Transformer<JsonNode, JsonNode> yamlArray() {
         return new Transformer<>(
                 PayloadDeserializerFactory.yamlArray(),
                 PayloadSplitterFactory.jsonArray(),
@@ -63,9 +65,9 @@ public class TransformerFactory {
      *
      * @return a {@link Transformer} for {@code ResultSet} sources
      */
-    public static Transformer<ResultSet, ResultSet, Map<String, Object>> resultSet() {
+    public static Transformer<ResultSet, Map<String, Object>> resultSet() {
         return new Transformer<>(
-                r -> r,
+                null,
                 PayloadSplitterFactory.resultSet(),
                 RecordSerializerFactory.map());
     }
@@ -86,8 +88,8 @@ public class TransformerFactory {
      * @param serializer   the serialization stage
      * @return a new {@link Transformer} wrapping the provided components
      */
-    public static <R, P, T> Transformer<R, P, T> of(
-            PayloadDeserializer<R, P> deserializer,
+    public static <R, P, T> Transformer<P, T> of(
+            PayloadDeserializer<P> deserializer,
             PayloadSplitter<P, T> splitter,
             RecordSerializer<T> serializer) {
         return new Transformer<>(deserializer, splitter, serializer);

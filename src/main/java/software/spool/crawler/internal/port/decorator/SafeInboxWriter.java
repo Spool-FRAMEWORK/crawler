@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.decorator;
+package software.spool.crawler.internal.port.decorator;
 
 import software.spool.core.exception.InboxWriteException;
 import software.spool.core.exception.SpoolException;

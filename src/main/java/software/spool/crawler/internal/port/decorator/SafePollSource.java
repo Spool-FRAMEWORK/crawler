@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.decorator;
+package software.spool.crawler.internal.port.decorator;
 
 import software.spool.core.exception.SourcePollException;
 import software.spool.core.exception.SpoolException;

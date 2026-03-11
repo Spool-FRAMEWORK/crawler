@@ -18,7 +18,7 @@ public class CrawlerErrorRouter {
             .on(DeserializationException.class,
                 (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
                     .errorMessage(e.getMessage()).build()))
-            .on(SourceSplitException.class,
+            .on(SplitException.class,
                 (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
                     .errorMessage(e.getMessage()).build()))
             .on(SerializationException.class,

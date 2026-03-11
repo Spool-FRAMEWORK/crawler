@@ -30,12 +30,10 @@ import software.spool.crawler.internal.utils.factory.Transformer;
  *         MySerializer::new);
  * }</pre>
  *
- * @param <R> the raw source type produced by the
- *            {@link PollSource}
- * @param <P> the intermediate parsed type after deserialization
- * @param <T> the individual record type produced by the splitter
+ * @param <T> the intermediate parsed type after deserialization
+ * @param <O> the individual record type produced by the splitter
  */
-public interface ProcessorFormat<R, P, T> {
+public interface TransformerFormat<T, O> {
 
     /**
      * Returns a fully configured {@link Transformer} that can be applied to raw
@@ -44,5 +42,5 @@ public interface ProcessorFormat<R, P, T> {
      * @return a {@link Transformer} wiring together the deserializer, splitter, and
      *         serializer for this format
      */
-    Transformer<R, P, T> pipeline();
+    Transformer<T, O> pipeline();
 }
