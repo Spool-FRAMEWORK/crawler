@@ -3,8 +3,8 @@ package software.spool.crawler.internal.utils.factory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import software.spool.crawler.api.port.SourceDeserializer;
 import software.spool.core.exception.DeserializationException;
+import software.spool.core.port.PayloadDeserializer;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * Factory methods for common {@link SourceDeserializer} implementations.
+ * Factory methods for common {@link PayloadDeserializer} implementations.
  *
  * <p>
  * All returned deserializers are stateless lambdas backed by shared,
@@ -30,7 +30,7 @@ public class DeserializerFactory {
      *
      * @return a JSON deserializer
      */
-    public static SourceDeserializer<String, JsonNode> json() {
+    public static PayloadDeserializer<String, JsonNode> json() {
         return raw -> {
             try {
                 return jsonMapper.readTree(raw);
@@ -47,7 +47,7 @@ public class DeserializerFactory {
      * @return a JSON array deserializer
      * @throws DeserializationException if the root element is not a JSON array
      */
-    public static SourceDeserializer<String, JsonNode> jsonArray() {
+    public static PayloadDeserializer<String, JsonNode> jsonArray() {
         return raw -> {
             try {
                 JsonNode root = jsonMapper.readTree(raw);
@@ -66,7 +66,7 @@ public class DeserializerFactory {
      *
      * @return a YAML deserializer
      */
-    public static SourceDeserializer<String, JsonNode> yaml() {
+    public static PayloadDeserializer<String, JsonNode> yaml() {
         return raw -> {
             try {
                 return yamlMapper.readTree(raw);
@@ -83,7 +83,7 @@ public class DeserializerFactory {
      * @return a YAML sequence deserializer
      * @throws DeserializationException if the root element is not a YAML sequence
      */
-    public static SourceDeserializer<String, JsonNode> yamlArray() {
+    public static PayloadDeserializer<String, JsonNode> yamlArray() {
         return raw -> {
             try {
                 JsonNode root = yamlMapper.readTree(raw);
@@ -102,7 +102,7 @@ public class DeserializerFactory {
      *
      * @return a text-lines deserializer
      */
-    public static SourceDeserializer<String, List<String>> textLines() {
+    public static PayloadDeserializer<String, List<String>> textLines() {
         return raw -> {
             try {
                 return Stream.of(raw.split("\n"))
@@ -127,7 +127,7 @@ public class DeserializerFactory {
      *
      * @return a CSV deserializer
      */
-    public static SourceDeserializer<String, List<Map<String, String>>> csv() {
+    public static PayloadDeserializer<String, List<Map<String, String>>> csv() {
         return raw -> {
             try {
                 String[] headers = raw.split("\n")[0].split(",");
@@ -159,7 +159,7 @@ public class DeserializerFactory {
      * @param <T> the type of the raw input (and output)
      * @return an identity deserializer
      */
-    public static <T> SourceDeserializer<T, T> identity() {
+    public static <T> PayloadDeserializer<T, T> identity() {
         return raw -> raw;
     }
 }

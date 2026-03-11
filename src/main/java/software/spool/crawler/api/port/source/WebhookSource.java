@@ -1,6 +1,4 @@
-package software.spool.crawler.api.source;
-
-import software.spool.crawler.api.port.Source;
+package software.spool.crawler.api.port.source;
 
 /**
  * A data source that receives data by exposing an HTTP webhook endpoint.

@@ -22,16 +22,14 @@ import java.util.stream.Stream;
  * @param <O> the individual record type produced by splitting
  */
 @FunctionalInterface
-public interface SourceSplitter<I, O> {
+public interface PayloadSplitter<I, O> {
     /**
      * Splits the parsed payload into a stream of individual records.
      *
      * @param payload  the intermediate data to split; must not be {@code null}
-     * @param sourceId the identifier of the source that produced the payload;
-     *                 useful for constructing error messages
      * @return a non-null (possibly empty) {@link Stream} of individual records
      * @throws SpoolException if the payload structure is incompatible with this
      *                        splitter
      */
-    Stream<O> split(I payload, String sourceId) throws SpoolException;
+    Stream<O> split(I payload) throws SpoolException;
 }

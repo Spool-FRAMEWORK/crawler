@@ -1,6 +1,7 @@
-package software.spool.crawler.api;
+package software.spool.crawler.api.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import software.spool.crawler.api.port.source.PollSource;
 import software.spool.crawler.internal.utils.factory.TransformerFactory;
 
 import java.sql.ResultSet;
@@ -15,7 +16,7 @@ import java.util.Map;
  * via the corresponding
  * {@link software.spool.crawler.internal.utils.factory.TransformerFactory}
  * factory method. Choose the constant that matches the raw data produced by
- * your {@link software.spool.crawler.api.source.PollSource}.
+ * your {@link PollSource}.
  * </p>
  *
  * <p>

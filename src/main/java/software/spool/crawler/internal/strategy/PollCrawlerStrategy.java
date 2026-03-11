@@ -1,19 +1,13 @@
 package software.spool.crawler.internal.strategy;
 
 import software.spool.core.exception.*;
-import software.spool.crawler.api.port.SourceDeserializer;
-import software.spool.crawler.api.port.SourceSplitter;
+import software.spool.crawler.api.port.PayloadSplitter;
 import software.spool.crawler.api.strategy.BaseCrawlerStrategy;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
-import software.spool.crawler.internal.utils.CrawlerPorts;
+import software.spool.crawler.api.utils.CrawlerPorts;
 import software.spool.crawler.internal.utils.factory.Transformer;
 import software.spool.core.model.*;
-import software.spool.crawler.api.source.PollSource;
-
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
+import software.spool.crawler.api.port.source.PollSource;
 
 /**
  * Concrete {@link CrawlerStrategy} that orchestrates a full
@@ -29,11 +23,11 @@ import java.util.HexFormat;
  * <li>Deserialize the raw payload via the configured
  * {@link SourceDeserializer}.</li>
  * <li>Split the deserialized value into individual records via the configured
- * {@link SourceSplitter}.</li>
+ * {@link PayloadSplitter}.</li>
  * <li>For each record: serialize it, write it to the inbox, and emit
  * {@code SourceItemCaptured} and {@code InboxItemStored} events.</li>
  * <li>Route any {@link SpoolException} through the
- * {@link software.spool.crawler.api.ErrorRouter}
+ * {@link ErrorRouter}
  * inherited from {@link BaseCrawlerStrategy}.</li>
  * </ol>
  *
@@ -51,11 +45,9 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
     private final PollSource<R> source;
     private final Transformer<R, T, O> transformer;
     private final CrawlerPorts ports;
-    private final String sender;
 
     /**
-     * Constructs a new strategy with the given source, transformer, ports, and
-     * sender name.
+     * Constructs a new strategy with the given source, transformer and ports.
      *
      * @param source      the poll source to fetch data from; must not be
      *                    {@code null}
@@ -63,15 +55,12 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
      *                    {@code null}
      * @param ports       the ports (bus, inbox, error router) to use; must not be
      *                    {@code null}
-     * @param sender      the logical sender name included in emitted events
      */
-    public PollCrawlerStrategy(PollSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports,
-            String sender) {
-        super(ports.bus(), source.sourceId(), sender, ports.errorRouter());
+    public PollCrawlerStrategy(PollSource<R> source, Transformer<R, T, O> transformer, CrawlerPorts ports) {
+        super(ports.bus(), ports.errorRouter());
         this.source = source;
         this.transformer = transformer;
         this.ports = ports;
-        this.sender = sender;
     }
 
     /**
@@ -80,7 +69,7 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
      * <p>
      * Opens the source, polls it, applies the transformer pipeline, and writes
      * each resulting record to the inbox. Exceptions are routed through the
-     * inherited {@link software.spool.crawler.api.ErrorRouter}.
+     * inherited {@link ErrorRouter}.
      * </p>
      *
      * @throws SpoolException if an unrecoverable error occurs
@@ -88,7 +77,7 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
     @Override
     public void execute() throws SpoolException {
         try (PollSource<R> source = this.source.open()) {
-            transformer.splitter().split(transformer.deserializer().deserialize(source.poll()), source.sourceId())
+            transformer.splitter().split(transformer.deserializer().deserialize(source.poll()))
                     .forEach(this::process);
         } catch (SpoolContextException e) {
             errorRouter.dispatch(e, e.context());
@@ -104,10 +93,8 @@ public class PollCrawlerStrategy<R, T, O> extends BaseCrawlerStrategy implements
      * @param record the deserialized and split record to process
      */
     private void process(O record) {
-        String payload = transformer.serializer().serialize(record, sender);
+        String payload = transformer.serializer().serialize(record);
         SourceItemCaptured itemCapturedEvent = SourceItemCaptured.builder()
-                .senderId(sender)
-                .sourceId(source.sourceId())
                 .idempotencyKey(IdempotencyKey.of(source.sourceId(), payload))
                 .build();
         try {

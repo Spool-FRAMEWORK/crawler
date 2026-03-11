@@ -2,6 +2,7 @@ package software.spool.crawler.api.port;
 
 import software.spool.core.exception.InboxWriteException;
 import software.spool.core.model.IdempotencyKey;
+import software.spool.crawler.internal.adapter.InMemoryInboxWriter;
 
 /**
  * Port for writing captured payloads into the inbox.
@@ -14,7 +15,7 @@ import software.spool.core.model.IdempotencyKey;
  *
  * <p>
  * A simple in-memory implementation for testing/local use is available in
- * {@link software.spool.crawler.internal.utils.InMemoryInboxWriter}.
+ * {@link InMemoryInboxWriter}.
  * </p>
  */
 public interface InboxWriter {

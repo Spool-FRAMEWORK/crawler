@@ -2,7 +2,7 @@ package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import software.spool.core.exception.SourceSplitException;
-import software.spool.crawler.api.port.SourceSplitter;
+import software.spool.crawler.api.port.PayloadSplitter;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Factory methods for common {@link SourceSplitter} implementations.
+ * Factory methods for common {@link PayloadSplitter} implementations.
  *
  * <p>
  * All returned splitters are stateless lambdas or inner-class instances
@@ -29,8 +29,8 @@ public class SplitterFactory {
      * @return a splitter for JSON arrays; throws {@link SourceSplitException} if
      *         the parsed node is not an array
      */
-    public static SourceSplitter<JsonNode, JsonNode> jsonArray() {
-        return (parsed, source) -> {
+    public static PayloadSplitter<JsonNode, JsonNode> jsonArray() {
+        return parsed -> {
             if (parsed.isArray())
                 return StreamSupport.stream(parsed.spliterator(), false);
             throw new SourceSplitException("Expected JsonNode array, got: " + parsed.getNodeType().name(),
@@ -45,8 +45,8 @@ public class SplitterFactory {
      * @param <T> the type of the value
      * @return a passthrough splitter
      */
-    public static <T> SourceSplitter<T, T> single() {
-        return (parsed, source) -> Stream.of(parsed);
+    public static <T> PayloadSplitter<T, T> single() {
+        return Stream::of;
     }
 
     /**
@@ -55,8 +55,8 @@ public class SplitterFactory {
      *
      * @return a splitter for {@code ResultSet} sources
      */
-    public static SourceSplitter<ResultSet, Map<String, Object>> resultSet() {
-        return (rs, source) -> StreamSupport.stream(
+    public static PayloadSplitter<ResultSet, Map<String, Object>> resultSet() {
+        return rs -> StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(
                         new ResultSetIterator(rs),
                         0),

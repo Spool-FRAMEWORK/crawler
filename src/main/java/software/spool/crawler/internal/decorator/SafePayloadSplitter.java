@@ -2,12 +2,12 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.SourceSplitException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.api.port.SourceSplitter;
+import software.spool.crawler.api.port.PayloadSplitter;
 
 import java.util.stream.Stream;
 
 /**
- * Decorator for {@link SourceSplitter} that normalises unchecked exceptions
+ * Decorator for {@link PayloadSplitter} that normalises unchecked exceptions
  * into typed {@link SourceSplitException} instances.
  *
  * <p>
@@ -19,10 +19,10 @@ import java.util.stream.Stream;
  * @param <I> the intermediate input type
  * @param <O> the individual record output type
  */
-public class SafeSourceSplitter<I, O> implements SourceSplitter<I, O> {
-    private final SourceSplitter<I, O> splitter;
+public class SafePayloadSplitter<I, O> implements PayloadSplitter<I, O> {
+    private final PayloadSplitter<I, O> splitter;
 
-    private SafeSourceSplitter(SourceSplitter<I, O> splitter) {
+    private SafePayloadSplitter(PayloadSplitter<I, O> splitter) {
         this.splitter = splitter;
     }
 
@@ -34,14 +34,14 @@ public class SafeSourceSplitter<I, O> implements SourceSplitter<I, O> {
      * @param splitter the splitter to wrap; must not be {@code null}
      * @return a new {@code SafeSourceSplitter} instance
      */
-    public static <I, O> SafeSourceSplitter<I, O> of(SourceSplitter<I, O> splitter) {
-        return new SafeSourceSplitter<>(splitter);
+    public static <I, O> SafePayloadSplitter<I, O> of(PayloadSplitter<I, O> splitter) {
+        return new SafePayloadSplitter<>(splitter);
     }
 
     @Override
-    public Stream<O> split(I payload, String sourceId) throws SpoolException {
+    public Stream<O> split(I payload) throws SpoolException {
         try {
-            return splitter.split(payload, sourceId);
+            return splitter.split(payload);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {

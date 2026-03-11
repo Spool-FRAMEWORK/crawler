@@ -1,8 +1,7 @@
-package software.spool.crawler.api.dsl;
+package software.spool.crawler.api.builder;
 
-import software.spool.crawler.api.source.PollSource;
-import software.spool.crawler.internal.utils.CrawlerPorts;
-import software.spool.crawler.internal.utils.InMemoryInboxWriter;
+import software.spool.crawler.api.port.source.PollSource;
+import software.spool.crawler.internal.adapter.InMemoryInboxWriter;
 
 /**
  * Entry point of the crawler DSL.
@@ -30,17 +29,17 @@ import software.spool.crawler.internal.utils.InMemoryInboxWriter;
  * testing)</li>
  * </ul>
  */
-public final class Crawlers {
-    private Crawlers() {
+public final class CrawlerBuilderFactory {
+    private CrawlerBuilderFactory() {
     }
 
     /**
      * Starts constructing a poll-based crawler for the given source.
      *
      * <p>
-     * The returned {@link PollSourceStep} allows further configuration of the
+     * The returned {@link PollSourceBuilder} allows further configuration of the
      * processing format, ports, and sender name before calling
-     * {@link PollSourceStep#create()} to obtain the final
+     * {@link PollSourceBuilder#create()} to obtain the final
      * {@link software.spool.crawler.api.strategy.CrawlerStrategy}.
      * </p>
      *
@@ -48,8 +47,7 @@ public final class Crawlers {
      * @param source the poll source to crawl; must not be {@code null}
      * @return a fluent builder step for completing the crawler configuration
      */
-    public static <R> PollSourceStep<R, R, R> poll(PollSource<R> source) {
-        return new PollSourceStep<>(source,
-                CrawlerPorts.builder().bus(System.out::println).inbox(new InMemoryInboxWriter()).build());
+    public static <R> PollSourceBuilder<R, R, R> poll(PollSource<R> source) {
+        return new PollSourceBuilder<>(source);
     }
 }

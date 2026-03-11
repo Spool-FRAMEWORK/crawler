@@ -1,8 +1,8 @@
 package software.spool.crawler.internal.utils.factory;
 
-import software.spool.crawler.api.port.SourceDeserializer;
-import software.spool.crawler.api.port.SourceSplitter;
-import software.spool.crawler.api.port.SourceSerializer;
+import software.spool.core.port.PayloadDeserializer;
+import software.spool.core.port.RecordSerializer;
+import software.spool.crawler.api.port.PayloadSplitter;
 
 import java.util.stream.Stream;
 
@@ -36,9 +36,9 @@ import java.util.stream.Stream;
  * @param <T> the individual record type
  */
 public record Transformer<R, P, T>(
-        SourceDeserializer<R, P> deserializer,
-        SourceSplitter<P, T> splitter,
-        SourceSerializer<T> serializer) {
+        PayloadDeserializer<R, P> deserializer,
+        PayloadSplitter<P, T> splitter,
+        RecordSerializer<T> serializer) {
     /**
      * Creates a new {@code Transformer} from the three given pipeline components.
      *
@@ -50,8 +50,8 @@ public record Transformer<R, P, T>(
      * @param serializer   the serializer stage; must not be {@code null}
      * @return a new {@code Transformer}
      */
-    public static <R, P, T> Transformer<R, P, T> of(SourceDeserializer<R, P> deserializer,
-            SourceSplitter<P, T> splitter, SourceSerializer<T> serializer) {
+    public static <R, P, T> Transformer<R, P, T> of(PayloadDeserializer<R, P> deserializer,
+                                                    PayloadSplitter<P, T> splitter, RecordSerializer<T> serializer) {
         return new Transformer<>(deserializer, splitter, serializer);
     }
 
@@ -70,8 +70,8 @@ public record Transformer<R, P, T>(
      * @param serializer the serializer to apply; must not be {@code null}
      * @return a new {@code Transformer} with no-op deserializer and splitter
      */
-    public static <T> Transformer<Object, Object, T> onlySerializer(SourceSerializer<T> serializer) {
-        return new Transformer<>(r -> null, (p, source) -> Stream.of((T) p), serializer);
+    public static <T> Transformer<Object, Object, T> onlySerializer(RecordSerializer<T> serializer) {
+        return new Transformer<>(r -> null, p -> Stream.of((T) p), serializer);
     }
 
     /**
@@ -84,8 +84,8 @@ public record Transformer<R, P, T>(
      * @param serializer   the serializer stage; must not be {@code null}
      * @return a new {@code Transformer} with an identity splitter
      */
-    public static <R, P> Transformer<R, P, P> noSplitter(SourceDeserializer<R, P> deserializer,
-            SourceSerializer<P> serializer) {
-        return new Transformer<>(deserializer, (p, source) -> Stream.of(p), serializer);
+    public static <R, P> Transformer<R, P, P> noSplitter(PayloadDeserializer<R, P> deserializer,
+                                                         RecordSerializer<P> serializer) {
+        return new Transformer<>(deserializer, Stream::of, serializer);
     }
 }

@@ -2,7 +2,7 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.SourcePollException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.api.source.PollSource;
+import software.spool.crawler.api.port.source.PollSource;
 
 /**
  * Decorator for {@link PollSource} that normalises unchecked exceptions into
@@ -13,7 +13,7 @@ import software.spool.crawler.api.source.PollSource;
  * {@link SpoolException} subclass, it is re-thrown as-is. Any other
  * {@link Exception} is wrapped in a new {@link SourcePollException}. This
  * guarantees the crawler strategy always receives typed exceptions that can be
- * handled by the {@link software.spool.crawler.api.ErrorRouter}.
+ * handled by the {@link ErrorRouter}.
  * </p>
  *
  * @param <R> the raw type produced by the wrapped source

@@ -1,6 +1,7 @@
 package software.spool.crawler.api.strategy;
 
 import software.spool.core.exception.SpoolException;
+import software.spool.crawler.api.builder.CrawlerBuilderFactory;
 
 /**
  * Core abstraction representing a single crawler execution cycle.
@@ -13,7 +14,7 @@ import software.spool.core.exception.SpoolException;
  *
  * <p>
  * The typical entry point for obtaining a pre-configured strategy is the
- * fluent DSL provided by {@link software.spool.crawler.api.dsl.Crawlers}:
+ * fluent DSL provided by {@link CrawlerBuilderFactory}:
  * </p>
  * 
  * <pre>{@code
@@ -33,7 +34,7 @@ public interface CrawlerStrategy {
      * Implementations should fetch data from their source, apply the processing
      * pipeline, and route the results to the inbox and event bus. Errors are
      * expected to be handled internally via an
-     * {@link software.spool.crawler.api.ErrorRouter}
+     * {@link ErrorRouter}
      * rather than propagated to the caller whenever possible.
      * </p>
      *

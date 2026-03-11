@@ -1,7 +1,7 @@
-package software.spool.crawler.api.source;
+package software.spool.crawler.api.port.source;
 
-import software.spool.crawler.api.port.Source;
 import software.spool.core.exception.SpoolException;
+import software.spool.crawler.api.utils.ProcessorFormat;
 
 /**
  * A data source that is polled on demand to fetch the next payload.
@@ -9,7 +9,7 @@ import software.spool.core.exception.SpoolException;
  * <p>
  * The crawler calls {@link #open()} once before starting the polling cycle
  * and {@link #poll()} to retrieve the raw data. Results are then fed into the
- * configured {@link software.spool.crawler.api.ProcessorFormat} pipeline for
+ * configured {@link ProcessorFormat} pipeline for
  * deserialization, splitting, and serialization.
  * </p>
  *

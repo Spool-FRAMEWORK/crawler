@@ -1,9 +1,10 @@
 package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import software.spool.crawler.api.port.SourceDeserializer;
-import software.spool.crawler.api.port.SourceSplitter;
-import software.spool.crawler.api.port.SourceSerializer;
+import software.spool.core.port.PayloadDeserializer;
+import software.spool.core.port.RecordSerializer;
+import software.spool.crawler.api.port.PayloadSplitter;
+import software.spool.crawler.api.utils.Formats;
 
 import java.sql.ResultSet;
 import java.util.Map;
@@ -14,15 +15,14 @@ import java.util.Map;
  *
  * <p>
  * The factory methods are referenced directly from the constants in
- * {@link software.spool.crawler.api.Formats} as method references:
+ * {@link Formats} as method references:
  * 
  * <pre>{@code
  * ProcessorFormat<String, JsonNode, JsonNode> JSON_ARRAY = TransformerFactory::jsonArray;
  * }</pre>
  *
  * <p>
- * Custom transformers can be created with the generic
- * {@link #of(SourceDeserializer, SourceSplitter, SourceSerializer)} variant.
+ * Custom transformers can be created with the generic variant.
  * </p>
  */
 public class TransformerFactory {
@@ -87,9 +87,9 @@ public class TransformerFactory {
      * @return a new {@link Transformer} wrapping the provided components
      */
     public static <R, P, T> Transformer<R, P, T> of(
-            SourceDeserializer<R, P> deserializer,
-            SourceSplitter<P, T> splitter,
-            SourceSerializer<T> serializer) {
+            PayloadDeserializer<R, P> deserializer,
+            PayloadSplitter<P, T> splitter,
+            RecordSerializer<T> serializer) {
         return new Transformer<>(deserializer, splitter, serializer);
     }
 }

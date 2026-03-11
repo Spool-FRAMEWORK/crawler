@@ -1,4 +1,4 @@
-package software.spool.crawler.api.source;
+package software.spool.crawler.api.port.source;
 
 /**
  * Configuration descriptor for registering a webhook HTTP endpoint.

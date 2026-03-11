@@ -2,10 +2,10 @@ package software.spool.crawler.internal.decorator;
 
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.api.port.SourceDeserializer;
+import software.spool.core.port.PayloadDeserializer;
 
 /**
- * Decorator for {@link SourceDeserializer} that normalises unchecked exceptions
+ * Decorator for {@link PayloadDeserializer} that normalises unchecked exceptions
  * into typed {@link DeserializationException} instances.
  *
  * <p>
@@ -17,23 +17,23 @@ import software.spool.crawler.api.port.SourceDeserializer;
  * @param <R> the raw type to deserialize from
  * @param <T> the intermediate type produced after deserialization
  */
-public class SafeSourceDeserializer<R, T> implements SourceDeserializer<R, T> {
-    private final SourceDeserializer<R, T> deserializer;
+public class SafePayloadDeserializer<R, T> implements PayloadDeserializer<R, T> {
+    private final PayloadDeserializer<R, T> deserializer;
 
-    private SafeSourceDeserializer(SourceDeserializer<R, T> deserializer) {
+    private SafePayloadDeserializer(PayloadDeserializer<R, T> deserializer) {
         this.deserializer = deserializer;
     }
 
     /**
-     * Creates a new {@code SafeSourceDeserializer} wrapping the given delegate.
+     * Creates a new {@code SafePayloadDeserializer} wrapping the given delegate.
      *
      * @param <R>          the raw input type
      * @param <T>          the intermediate output type
      * @param deserializer the deserializer to wrap; must not be {@code null}
-     * @return a new {@code SafeSourceDeserializer} instance
+     * @return a new {@code SafePayloadDeserializer} instance
      */
-    public static <R, T> SafeSourceDeserializer<R, T> of(SourceDeserializer<R, T> deserializer) {
-        return new SafeSourceDeserializer<>(deserializer);
+    public static <R, T> SafePayloadDeserializer<R, T> of(PayloadDeserializer<R, T> deserializer) {
+        return new SafePayloadDeserializer<>(deserializer);
     }
 
     @Override

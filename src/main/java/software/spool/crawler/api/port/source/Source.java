@@ -1,4 +1,4 @@
-package software.spool.crawler.api.port;
+package software.spool.crawler.api.port.source;
 
 /**
  * Base internal interface for all types of data sources.
@@ -13,9 +13,9 @@ package software.spool.crawler.api.port;
  * <p>
  * This is an SPI interface and is not intended for direct implementation
  * by end users. Use the higher-level
- * {@link software.spool.crawler.api.source.PollSource},
- * {@link software.spool.crawler.api.source.StreamSource}, or
- * {@link software.spool.crawler.api.source.WebhookSource} instead.
+ * {@link PollSource},
+ * {@link StreamSource}, or
+ * {@link WebhookSource} instead.
  * </p>
  */
 public interface Source extends AutoCloseable {

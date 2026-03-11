@@ -2,13 +2,13 @@ package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.spool.crawler.api.port.SourceSerializer;
 import software.spool.core.exception.SerializationException;
+import software.spool.core.port.RecordSerializer;
 
 import java.util.Map;
 
 /**
- * Factory methods for common {@link SourceSerializer} implementations backed
+ * Factory methods for common {@link RecordSerializer} implementations backed
  * by a shared Jackson {@link ObjectMapper}.
  *
  * <p>
@@ -23,8 +23,8 @@ public class SerializerFactory {
      *
      * @return a serializer for {@link JsonNode} values
      */
-    public static SourceSerializer<JsonNode> jsonNode() {
-        return (node, source) -> {
+    public static RecordSerializer<JsonNode> jsonNode() {
+        return node -> {
             try {
                 return mapper.writeValueAsString(node);
             } catch (Exception e) {
@@ -39,8 +39,8 @@ public class SerializerFactory {
      *
      * @return a serializer for map values
      */
-    public static SourceSerializer<Map<String, Object>> map() {
-        return (map, source) -> {
+    public static RecordSerializer<Map<String, Object>> map() {
+        return map -> {
             try {
                 return mapper.writeValueAsString(map);
             } catch (Exception e) {

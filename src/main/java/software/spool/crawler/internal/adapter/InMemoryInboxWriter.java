@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.utils;
+package software.spool.crawler.internal.adapter;
 
 import software.spool.core.exception.SpoolException;
 import software.spool.core.model.IdempotencyKey;
