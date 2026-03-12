@@ -1,10 +1,10 @@
 package software.spool.crawler.internal.strategy;
 
 import software.spool.core.exception.*;
+import software.spool.core.utils.DomainEventMapping;
 import software.spool.crawler.api.port.PayloadSplitter;
 import software.spool.crawler.api.strategy.BaseCrawlerStrategy;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
-import software.spool.crawler.api.utils.DomainEventMapping;
 import software.spool.crawler.api.utils.CrawlerPorts;
 import software.spool.crawler.internal.utils.factory.Transformer;
 import software.spool.core.model.*;
@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class PollCrawlerStrategy<I, T, O> implements CrawlerStrategy {
     private final PollSource<I> source;
-    private final Transformer<I, T, O> transformer;
+    private final Transformer<T, O> transformer;
     private final CrawlerPorts ports;
     private final List<DomainEventMapping<?>> domainMappings;
 
@@ -60,11 +60,20 @@ public class PollCrawlerStrategy<I, T, O> implements CrawlerStrategy {
      * @param ports       the ports (bus, inbox, error router) to use; must not be
      *                    {@code null}
      */
-    public PollCrawlerStrategy(PollSource<I> source, Transformer<I, T, O> transformer, CrawlerPorts ports) {
+    public PollCrawlerStrategy(PollSource<I> source, Transformer<T, O> transformer, CrawlerPorts ports) {
         this(source, transformer, ports, List.of());
     }
 
-    public PollCrawlerStrategy(PollSource<I> source, Transformer<I, T, O> transformer, CrawlerPorts ports, List<DomainEventMapping<?>> domainMappings) {
+    /**
+     * Creates a new strategy with domain event mappings.
+     *
+     * @param source         the poll source to fetch data from
+     * @param transformer    the pipeline to apply to each fetched payload
+     * @param ports          the ports (bus, inbox, error router) to use
+     * @param domainMappings additional domain event mappings
+     */
+    public PollCrawlerStrategy(PollSource<I> source, Transformer<T, O> transformer, CrawlerPorts ports,
+            List<DomainEventMapping<?>> domainMappings) {
         this.source = source;
         this.transformer = transformer;
         this.ports = ports;
@@ -85,10 +94,7 @@ public class PollCrawlerStrategy<I, T, O> implements CrawlerStrategy {
     @Override
     public void execute() throws SpoolException {
         try (PollSource<I> source = this.source.open()) {
-            transformer.splitter().split(transformer.deserializer().deserialize(source.poll()))
-                    .forEach(this::process);
-        } catch (SpoolContextException e) {
-            ports.errorRouter().dispatch(e, e.context());
+            transformer.transform(source.poll()).forEach(this::process);
         } catch (Exception e) {
             ports.errorRouter().dispatch(e);
         }
@@ -98,21 +104,15 @@ public class PollCrawlerStrategy<I, T, O> implements CrawlerStrategy {
      * Serializes one record, stores it in the inbox, and emits the corresponding
      * events.
      *
-     * @param record the deserialized and split record to process
+     * @param payload the serialized and split record to process
      */
-    private void process(O record) {
-        String payload = transformer.serializer().serialize(record);
+    private void process(String payload) {
         SourceItemCaptured itemCapturedEvent = SourceItemCaptured.builder()
                 .idempotencyKey(IdempotencyKey.of(source.sourceId(), payload))
                 .build();
-        try {
-            ports.bus().emit(itemCapturedEvent);
-            ports.inboxWriter().receive(payload, itemCapturedEvent.idempotencyKey());
-            ports.bus().emit(InboxItemStored.builder().from(itemCapturedEvent).build());
-            domainMappings.forEach(m ->
-                    ports.bus().emit(m.resolve(payload, itemCapturedEvent.idempotencyKey())));
-        } catch (Exception e) {
-            throw new SpoolContextException(e, itemCapturedEvent);
-        }
+        ports.bus().emit(itemCapturedEvent);
+        ports.inboxWriter().receive(payload, itemCapturedEvent.idempotencyKey());
+        ports.bus().emit(InboxItemStored.builder().from(itemCapturedEvent).build());
+        domainMappings.forEach(m -> ports.bus().emit(m.resolve(payload, itemCapturedEvent.idempotencyKey())));
     }
 }

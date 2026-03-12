@@ -1,7 +1,7 @@
 package software.spool.crawler.internal.utils.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import software.spool.core.exception.SourceSplitException;
+import software.spool.core.exception.SplitException;
 import software.spool.crawler.api.port.PayloadSplitter;
 
 import java.sql.ResultSet;
@@ -23,17 +23,22 @@ import java.util.stream.StreamSupport;
  * </p>
  */
 public class PayloadSplitterFactory {
+
+    private PayloadSplitterFactory() {
+        // utility class
+    }
+
     /**
      * Returns a splitter that streams the elements of a {@link JsonNode} array.
      *
-     * @return a splitter for JSON arrays; throws {@link SourceSplitException} if
+     * @return a splitter for JSON arrays; throws {@link SplitException} if
      *         the parsed node is not an array
      */
     public static PayloadSplitter<JsonNode, JsonNode> jsonArray() {
         return parsed -> {
             if (parsed.isArray())
                 return StreamSupport.stream(parsed.spliterator(), false);
-            throw new SourceSplitException("Expected JsonNode array, got: " + parsed.getNodeType().name(),
+            throw new SplitException("Expected JsonNode array, got: " + parsed.getNodeType().name(),
                     parsed.toString());
         };
     }
@@ -85,7 +90,7 @@ public class PayloadSplitterFactory {
                         nextRow = rowToMap(rs);
                     }
                 } catch (SQLException e) {
-                    throw new SourceSplitException("ResultSet hasNext failed", null);
+                    throw new SplitException("ResultSet hasNext failed", null);
                 }
             }
             return hasNext;

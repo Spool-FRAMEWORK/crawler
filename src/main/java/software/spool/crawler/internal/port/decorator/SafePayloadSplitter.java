@@ -1,6 +1,6 @@
-package software.spool.crawler.internal.decorator;
+package software.spool.crawler.internal.port.decorator;
 
-import software.spool.core.exception.SourceSplitException;
+import software.spool.core.exception.SplitException;
 import software.spool.core.exception.SpoolException;
 import software.spool.crawler.api.port.PayloadSplitter;
 
@@ -8,12 +8,12 @@ import java.util.stream.Stream;
 
 /**
  * Decorator for {@link PayloadSplitter} that normalises unchecked exceptions
- * into typed {@link SourceSplitException} instances.
+ * into typed {@link SplitException} instances.
  *
  * <p>
- * If the delegate's {@link #split(Object, String)} method throws a
+ * If the delegate's {@link #split(Object)} method throws a
  * {@link SpoolException} subclass, it is re-thrown as-is. Any other
- * {@link Exception} is wrapped in a new {@link SourceSplitException}.
+ * {@link Exception} is wrapped in a new {@link SplitException}.
  * </p>
  *
  * @param <I> the intermediate input type
@@ -45,7 +45,7 @@ public class SafePayloadSplitter<I, O> implements PayloadSplitter<I, O> {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new SourceSplitException(e.getMessage(), payload.toString());
+            throw new SplitException(payload.toString(), e.getMessage());
         }
     }
 }

@@ -1,7 +1,7 @@
 package software.spool.crawler.api.builder;
 
 import software.spool.crawler.api.port.source.PollSource;
-import software.spool.crawler.internal.adapter.InMemoryInboxWriter;
+import software.spool.crawler.api.adapter.InMemoryInboxWriter;
 
 /**
  * Entry point of the crawler DSL.

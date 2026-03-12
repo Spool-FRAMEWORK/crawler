@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.decorator;
+package software.spool.crawler.internal.port.decorator;
 
 import software.spool.core.exception.SerializationException;
 import software.spool.core.exception.SpoolException;
@@ -41,7 +41,7 @@ public class SafeRecordSerializer<T> implements RecordSerializer<T> {
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new SerializationException(e.getMessage(), record.toString());
+            throw new SerializationException(record.toString(), e.getMessage());
         }
     }
 }

@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.util.Map;
 
 /**
- * Predefined {@link ProcessorFormat} constants ready to be used with the
+ * Predefined {@link TransformerFormat} constants ready to be used with the
  * crawler DSL.
  *
  * <p>
@@ -43,7 +43,7 @@ public final class Formats {
          * and serializes each record back to a compact JSON {@code String}.
          * </p>
          */
-        public static final ProcessorFormat<String, JsonNode, JsonNode> JSON_ARRAY = TransformerFactory::jsonArray;
+        public static final TransformerFormat<JsonNode, JsonNode> JSON_ARRAY = TransformerFactory::jsonArray;
 
         /**
          * Pipeline for JDBC {@link ResultSet} sources.
@@ -54,7 +54,7 @@ public final class Formats {
          * and serializes each row map to a JSON {@code String}.
          * </p>
          */
-        public static final ProcessorFormat<ResultSet, ResultSet, Map<String, Object>> RESULT_SET = TransformerFactory::resultSet;
+        public static final TransformerFormat<ResultSet, Map<String, Object>> RESULT_SET = TransformerFactory::resultSet;
 
         /**
          * Pipeline for raw YAML strings that represent a YAML sequence (array).
@@ -66,5 +66,5 @@ public final class Formats {
          * compact JSON {@code String}.
          * </p>
          */
-        public static final ProcessorFormat<String, JsonNode, JsonNode> YAML_ARRAY = TransformerFactory::yamlArray;
+        public static final TransformerFormat<JsonNode, JsonNode> YAML_ARRAY = TransformerFactory::yamlArray;
 }

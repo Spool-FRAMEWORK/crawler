@@ -1,8 +1,8 @@
 package software.spool.crawler.api.port;
 
-import software.spool.core.exception.InboxWriteException;
+import software.spool.core.exception.*;
 import software.spool.core.model.IdempotencyKey;
-import software.spool.crawler.internal.adapter.InMemoryInboxWriter;
+import software.spool.crawler.api.adapter.InMemoryInboxWriter;
 
 /**
  * Port for writing captured payloads into the inbox.
@@ -30,6 +30,7 @@ public interface InboxWriter {
      *                       key
      * @return the identifier assigned to the stored entry
      * @throws InboxWriteException if the entry could not be persisted
+     * @throws DuplicateEventException if the entry was duplicated
      */
-    IdempotencyKey receive(String payload, IdempotencyKey idempotencyKey) throws InboxWriteException;
+    IdempotencyKey receive(String payload, IdempotencyKey idempotencyKey) throws InboxWriteException, DuplicateEventException;
 }

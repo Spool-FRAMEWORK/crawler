@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.decorator;
+package software.spool.crawler.internal.port.decorator;
 
 import software.spool.core.exception.SourcePollException;
 import software.spool.core.exception.SpoolException;
@@ -13,7 +13,7 @@ import software.spool.crawler.api.port.source.PollSource;
  * {@link SpoolException} subclass, it is re-thrown as-is. Any other
  * {@link Exception} is wrapped in a new {@link SourcePollException}. This
  * guarantees the crawler strategy always receives typed exceptions that can be
- * handled by the {@link ErrorRouter}.
+ * handled by the {@link software.spool.core.utils.ErrorRouter ErrorRouter}.
  * </p>
  *
  * @param <R> the raw type produced by the wrapped source

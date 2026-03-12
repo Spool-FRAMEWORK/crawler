@@ -4,6 +4,7 @@ import software.spool.core.port.PayloadDeserializer;
 import software.spool.core.port.RecordSerializer;
 import software.spool.crawler.api.port.PayloadSplitter;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -31,18 +32,19 @@ import java.util.stream.Stream;
  * Transformer<String, JsonNode, JsonNode> t = Transformer.of(myDeserializer, mySplitter, mySerializer);
  * }</pre>
  *
- * @param <R> the raw source type
- * @param <P> the intermediate parsed type
- * @param <T> the individual record type
+ * @param deserializer the deserialization stage
+ * @param splitter     the splitting stage
+ * @param serializer   the serialization stage
+ * @param <T>          the intermediate parsed type
+ * @param <O>          the individual record type
  */
-public record Transformer<R, P, T>(
-        PayloadDeserializer<R, P> deserializer,
-        PayloadSplitter<P, T> splitter,
-        RecordSerializer<T> serializer) {
+public record Transformer<T, O>(
+        PayloadDeserializer<T> deserializer,
+        PayloadSplitter<T, O> splitter,
+        RecordSerializer<O> serializer) {
     /**
      * Creates a new {@code Transformer} from the three given pipeline components.
      *
-     * @param <R>          the raw source type
      * @param <P>          the intermediate parsed type
      * @param <T>          the individual record type
      * @param deserializer the deserializer stage; must not be {@code null}
@@ -50,8 +52,8 @@ public record Transformer<R, P, T>(
      * @param serializer   the serializer stage; must not be {@code null}
      * @return a new {@code Transformer}
      */
-    public static <R, P, T> Transformer<R, P, T> of(PayloadDeserializer<R, P> deserializer,
-                                                    PayloadSplitter<P, T> splitter, RecordSerializer<T> serializer) {
+    public static <P, T> Transformer<P, T> of(PayloadDeserializer<P> deserializer,
+            PayloadSplitter<P, T> splitter, RecordSerializer<T> serializer) {
         return new Transformer<>(deserializer, splitter, serializer);
     }
 
@@ -70,7 +72,7 @@ public record Transformer<R, P, T>(
      * @param serializer the serializer to apply; must not be {@code null}
      * @return a new {@code Transformer} with no-op deserializer and splitter
      */
-    public static <T> Transformer<Object, Object, T> onlySerializer(RecordSerializer<T> serializer) {
+    public static <T> Transformer<Object, T> onlySerializer(RecordSerializer<T> serializer) {
         return new Transformer<>(r -> null, p -> Stream.of((T) p), serializer);
     }
 
@@ -78,14 +80,28 @@ public record Transformer<R, P, T>(
      * Creates a {@code Transformer} that applies the deserializer and serializer
      * but uses a no-op splitter (each deserialized value becomes a single record).
      *
-     * @param <R>          the raw source type
      * @param <P>          the intermediate and record type
      * @param deserializer the deserializer stage; must not be {@code null}
      * @param serializer   the serializer stage; must not be {@code null}
      * @return a new {@code Transformer} with an identity splitter
      */
-    public static <R, P> Transformer<R, P, P> noSplitter(PayloadDeserializer<R, P> deserializer,
-                                                         RecordSerializer<P> serializer) {
+    public static <P> Transformer<P, P> noSplitter(PayloadDeserializer<P> deserializer,
+            RecordSerializer<P> serializer) {
         return new Transformer<>(deserializer, Stream::of, serializer);
+    }
+
+    /**
+     * Applies the full pipeline (deserialize → split → serialize) to the given
+     * input and returns a stream of serialized strings.
+     *
+     * @param <I>  the input type
+     * @param poll the raw input from the source
+     * @return a stream of serialized record strings
+     */
+    @SuppressWarnings("unchecked")
+    public <I> Stream<String> transform(I poll) {
+        if (Objects.nonNull(deserializer) && poll instanceof String)
+            return splitter.split(deserializer.deserialize((String) poll)).map(serializer::serialize);
+        return splitter.split((T) poll).map(serializer::serialize);
     }
 }
