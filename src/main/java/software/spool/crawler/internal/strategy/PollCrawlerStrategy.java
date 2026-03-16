@@ -1,7 +1,6 @@
 package software.spool.crawler.internal.strategy;
 
 import software.spool.core.exception.*;
-import software.spool.core.utils.DomainEventMapping;
 import software.spool.crawler.api.port.PayloadSplitter;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
 import software.spool.crawler.api.utils.CrawlerPorts;
@@ -11,9 +10,7 @@ import software.spool.core.model.*;
 import software.spool.crawler.api.port.source.PollSource;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Concrete {@link CrawlerStrategy} that orchestrates a full
