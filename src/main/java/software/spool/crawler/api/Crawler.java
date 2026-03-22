@@ -31,7 +31,6 @@ public class Crawler implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        token.cancel();
-        token = CancellationToken.NONE;
+        stopCrawling();
     }
 }
