@@ -37,9 +37,9 @@ public final class CrawlerBuilderFactory {
      * Starts constructing a poll-based crawler for the given source.
      *
      * <p>
-     * The returned {@link PollSourceBuilder} allows further configuration of the
+     * The returned {@link PollingCrawlerBuilder} allows further configuration of the
      * processing format, ports, and sender name before calling
-     * {@link PollSourceBuilder#create()} to obtain the final
+     * {@link PollingCrawlerBuilder#create()} to obtain the final
      * {@link software.spool.crawler.api.strategy.CrawlerStrategy}.
      * </p>
      *
@@ -47,7 +47,7 @@ public final class CrawlerBuilderFactory {
      * @param source the poll source to crawl; must not be {@code null}
      * @return a fluent builder step for completing the crawler configuration
      */
-    public static <R> PollSourceBuilder<R, R, R> poll(PollSource<R> source) {
-        return new PollSourceBuilder<>(source);
+    public static <R> PollingCrawlerBuilder<R, R, R> poll(PollSource<R> source) {
+        return new PollingCrawlerBuilder<>(source);
     }
 }

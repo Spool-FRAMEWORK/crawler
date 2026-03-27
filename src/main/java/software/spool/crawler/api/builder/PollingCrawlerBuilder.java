@@ -17,7 +17,7 @@ import software.spool.crawler.internal.utils.factory.Transformer;
 
 import java.time.Duration;
 
-public class PollSourceBuilder<I, T, O> {
+public class PollingCrawlerBuilder<I, T, O> {
     private final PollSource<I> source;
     private Transformer<T, O> transformer;
     private CrawlerPorts ports;
@@ -25,14 +25,14 @@ public class PollSourceBuilder<I, T, O> {
     private PollingConfiguration schedule;
     private ErrorRouter errorRouter;
 
-    public PollSourceBuilder(PollSource<I> source) {
+    public PollingCrawlerBuilder(PollSource<I> source) {
         this.source = SafePollSource.of(source);
         this.schedule = PollingConfiguration.every(Duration.ofSeconds(30));
         this.eventMapping = new EventMappingSpecification(NamingConvention.SNAKE_CASE);
     }
 
-    private PollSourceBuilder(PollSource<I> source, CrawlerPorts ports, EventMappingSpecification eventMapping,
-                              PollingConfiguration schedule, ErrorRouter errorRouter) {
+    private PollingCrawlerBuilder(PollSource<I> source, CrawlerPorts ports, EventMappingSpecification eventMapping,
+                                  PollingConfiguration schedule, ErrorRouter errorRouter) {
         this.source = SafePollSource.of(source);
         this.ports = ports;
         this.eventMapping = eventMapping;
@@ -40,7 +40,7 @@ public class PollSourceBuilder<I, T, O> {
         this.errorRouter = errorRouter;
     }
 
-    public PollSourceBuilder<I, T, O> transformer(Transformer<T, O> transformer) {
+    public PollingCrawlerBuilder<I, T, O> transformer(Transformer<T, O> transformer) {
         this.transformer = Transformer.of(
                 SafePayloadDeserializer.of(transformer.deserializer()),
                 SafePayloadSplitter.of(transformer.splitter()),
@@ -48,27 +48,27 @@ public class PollSourceBuilder<I, T, O> {
         return this;
     }
 
-    public PollSourceBuilder<I, T, O> ports(CrawlerPorts ports) {
+    public PollingCrawlerBuilder<I, T, O> ports(CrawlerPorts ports) {
         this.ports = ports;
         return this;
     }
 
-    public <NT, NO> PollSourceBuilder<I, NT, NO> withFormat(TransformerFormat<NT, NO> format) {
-        return new PollSourceBuilder<I, NT, NO>(source, ports, eventMapping, schedule, errorRouter)
+    public <NT, NO> PollingCrawlerBuilder<I, NT, NO> withFormat(TransformerFormat<NT, NO> format) {
+        return new PollingCrawlerBuilder<I, NT, NO>(source, ports, eventMapping, schedule, errorRouter)
                 .transformer(format.pipeline());
     }
 
-    public PollSourceBuilder<I, T, O> eventMapping(EventMappingSpecification eventMapping) {
+    public PollingCrawlerBuilder<I, T, O> eventMapping(EventMappingSpecification eventMapping) {
         this.eventMapping = eventMapping;
         return this;
     }
 
-    public PollSourceBuilder<I, T, O> schedule(PollingConfiguration config) {
+    public PollingCrawlerBuilder<I, T, O> schedule(PollingConfiguration config) {
         this.schedule = config;
         return this;
     }
 
-    public PollSourceBuilder<I, T, O> withErrorRouter(ErrorRouter errorRouter) {
+    public PollingCrawlerBuilder<I, T, O> withErrorRouter(ErrorRouter errorRouter) {
         this.errorRouter = errorRouter;
         return this;
     }
