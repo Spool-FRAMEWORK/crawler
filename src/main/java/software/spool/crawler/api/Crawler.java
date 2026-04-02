@@ -15,13 +15,11 @@ public class Crawler implements SpoolModule {
     private volatile CancellationToken token;
     private final ErrorRouter errorRouter;
     private final ModuleHeartBeat heartBeat;
-    private final String moduleId;
 
-    public Crawler(CrawlerStrategy strategy, ErrorRouter errorRouter, ModuleHeartBeat heartBeat, String moduleId) {
+    public Crawler(CrawlerStrategy strategy, ErrorRouter errorRouter, ModuleHeartBeat heartBeat) {
         this.strategy = strategy;
         this.errorRouter = errorRouter;
         this.heartBeat = heartBeat;
-        this.moduleId = moduleId;
         this.token = CancellationToken.NOOP;
     }
 
@@ -47,6 +45,6 @@ public class Crawler implements SpoolModule {
 
     @Override
     public HealthPayload checkHealth() {
-        return token.isActive() ? HealthPayload.healthy(moduleId) : HealthPayload.degraded(moduleId, null);
+        return token.isActive() ? HealthPayload.healthy(heartBeat.identity().moduleId()) : HealthPayload.degraded(heartBeat.identity().moduleId(), null);
     }
 }
