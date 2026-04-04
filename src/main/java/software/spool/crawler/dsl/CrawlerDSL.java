@@ -14,7 +14,7 @@ import software.spool.crawler.api.builder.EventMappingSpecification;
 import software.spool.crawler.api.port.InboxWriter;
 import software.spool.crawler.api.utils.CrawlerErrorRouter;
 import software.spool.crawler.api.utils.CrawlerPorts;
-import software.spool.crawler.api.utils.Formats;
+import software.spool.crawler.api.utils.StandardFormat;
 import software.spool.crawler.internal.adapter.http.HTTPPollSource;
 
 import java.io.BufferedInputStream;
@@ -51,10 +51,16 @@ public class CrawlerDSL {
 
         EventBusEmitter bus   = buildEventBus(section(infra, "event-bus"));
         InboxWriter     inbox = buildInbox(section(infra, "inbox"));
+        String watchdogUrl    = buildWatchdogUrl(infra); // ← nuevo
 
         return CrawlerDSL.<Map<String, Object>>list(spool, "crawlers").stream()
-                .map(def -> buildCrawler(def, bus, inbox))
+                .map(def -> buildCrawler(def, bus, inbox, watchdogUrl)) // ← pasa la URL
                 .toList();
+    }
+
+    private String buildWatchdogUrl(Map<String, Object> infra) {
+        if (!infra.containsKey("watchdog")) return null;
+        return (String) section(infra, "watchdog").get("url");
     }
 
     // ─── Infrastructure ───────────────────────────────────────────────────────
@@ -73,7 +79,9 @@ public class CrawlerDSL {
     private InboxWriter buildInbox(Map<String, Object> def) {
         if (def.containsKey("sql")) {
             Map<String, Object> sql = section(def, "sql");
-            return InboxWriterFactory.sql(                  // adapta a tu API
+            return InboxWriterFactory.sql(
+                    (String) sql.get("dbType"),
+                    (String) sql.get("host"),
                     (String) sql.get("database"),
                     (String) sql.get("user"),
                     (String) sql.get("password"));
@@ -86,15 +94,17 @@ public class CrawlerDSL {
 
     // ─── Crawler ──────────────────────────────────────────────────────────────
 
-    private Crawler buildCrawler(Map<String, Object> def, EventBusEmitter bus, InboxWriter inbox) {
+    private Crawler buildCrawler(Map<String, Object> def, EventBusEmitter bus, InboxWriter inbox, String watchdogUrl) {
+        String moduleId = (String) def.get("id"); // ← extrae el id del crawler
         if (def.containsKey("poll")) {
-            return buildPollCrawler(section(def, "poll"), bus, inbox);
+            return buildPollCrawler(section(def, "poll"), bus, inbox, watchdogUrl, moduleId);
         }
         throw new IllegalArgumentException("Unknown crawler type in: " + def.keySet());
     }
 
-    private Crawler buildPollCrawler(Map<String, Object> poll, EventBusEmitter bus, InboxWriter inbox) {
-        return CrawlerBuilderFactory.poll(buildPollSource(section(poll, "source")))
+    private Crawler buildPollCrawler(Map<String, Object> poll, EventBusEmitter bus, InboxWriter inbox, String watchdogUrl, String moduleId) {
+        return CrawlerBuilderFactory.watchdog(watchdogUrl, moduleId) // ← pasa ambos
+                .poll(buildPollSource(section(poll, "source")))
                 .ports(CrawlerPorts.builder()
                         .bus(bus)
                         .inbox(inbox)
@@ -102,7 +112,7 @@ public class CrawlerDSL {
                 .schedule(buildSchedule(section(poll, "schedule")))
                 .withErrorRouter(CrawlerErrorRouter.defaults(bus))
                 .eventMapping(buildEventMapping(section(poll, "event-mapping")))
-                .createWith(Formats.valueOf((String) poll.get("format")));
+                .createWith(StandardFormat.valueOf((String) poll.get("format")));
     }
 
     // ─── Source ───────────────────────────────────────────────────────────────

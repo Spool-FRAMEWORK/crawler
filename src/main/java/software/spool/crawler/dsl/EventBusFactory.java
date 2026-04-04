@@ -1,5 +1,6 @@
 package software.spool.crawler.dsl;
 
+import software.spool.core.adapter.kafka.KafkaEventBus;
 import software.spool.core.adapter.kafka.KafkaEventBusConfig;
 import software.spool.core.adapter.kafka.KafkaEventBusEmitter;
 import software.spool.core.adapter.kafka.KafkaEventBusListener;
@@ -7,8 +8,20 @@ import software.spool.core.adapter.memory.InMemoryEventBus;
 import software.spool.core.port.bus.EventBus;
 import software.spool.core.port.bus.EventBusEmitter;
 import software.spool.core.port.bus.EventBusListener;
+import software.spool.crawler.dsl.descriptors.infrastructure.EventBusDescriptor;
 
 class EventBusFactory {
+    protected static EventBus from(EventBusDescriptor descriptor) {
+        return switch (descriptor.type()) {
+            case KAFKA -> kafka(descriptor.url());
+            case IN_MEMORY -> console();
+        };
+    }
+
+    private static EventBus kafka(String url) {
+        return new KafkaEventBus(kafkaEmitter(url), kafkaListener(url));
+    }
+
     protected static EventBus console() {
         return new InMemoryEventBus();
     }
