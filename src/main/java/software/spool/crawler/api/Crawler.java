@@ -38,8 +38,8 @@ public class Crawler implements SpoolModule {
     public void stop(SpoolNode.StartPermit permit) {
         if (!token.isActive()) return;
         Objects.requireNonNull(permit);
-        heartBeat.stop();
         token.cancel();
+        heartBeat.stop();
         token = CancellationToken.NOOP;
     }
 

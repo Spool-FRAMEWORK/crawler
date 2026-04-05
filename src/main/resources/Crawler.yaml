@@ -47,3 +47,10 @@ spoolModuleList:
         namingConvention: "SNAKE_CASE"
         attributeList:
           - value: "symbol"
+
+  - feeder:
+    id: "gemini-feeder"
+    workers: 4
+    poll:
+      every: 5
+      unit: "SECONDS"

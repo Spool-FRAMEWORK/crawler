@@ -1,4 +1,0 @@
-package software.spool.crawler.dsl.descriptors.module.crawler.source.poll;
-
-public record ScheduleDescriptor(Integer every, String unit) {
-}

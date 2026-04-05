@@ -38,6 +38,9 @@ public class CrawlerErrorRouter {
                 .on(InboxWriteException.class,
                         (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
                                 .from(cause).errorMessage(e.getMessage()).build()))
+                .on(DuplicateEventException.class,
+                        (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
+                                .errorMessage(e.getMessage()).idempotencyKey(e.getIdempotencyKey()).build()))
                 .orElse((e, cause) -> System.out.println(e.getMessage()));
     }
 }
