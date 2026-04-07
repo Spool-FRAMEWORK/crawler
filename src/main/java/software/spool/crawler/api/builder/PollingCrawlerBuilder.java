@@ -1,6 +1,7 @@
 package software.spool.crawler.api.builder;
 
 import software.spool.core.port.bus.Handler;
+import software.spool.core.port.serde.EnrichmentRule;
 import software.spool.core.port.serde.NamingConvention;
 import software.spool.core.port.watchdog.ModuleHeartBeat;
 import software.spool.core.utils.polling.PollingConfiguration;
@@ -9,19 +10,22 @@ import software.spool.crawler.api.Crawler;
 import software.spool.crawler.api.port.source.PollSource;
 import software.spool.crawler.api.utils.CrawlerErrorRouter;
 import software.spool.crawler.api.utils.CrawlerPorts;
-import software.spool.crawler.api.utils.TransformerFormat;
+import software.spool.crawler.api.utils.NormalizerFormat;
 import software.spool.crawler.internal.control.ItemCapturedHandler;
 import software.spool.crawler.internal.port.decorator.SafePollSource;
 import software.spool.crawler.internal.strategy.PollingCrawlerStrategy;
-import software.spool.crawler.internal.utils.factory.Transformer;
+import software.spool.crawler.internal.utils.factory.Normalizer;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 
 public class PollingCrawlerBuilder<I> {
     private final PollSource<I> source;
     private final ModuleHeartBeat heartBeat;
     private CrawlerPorts ports;
+    private List<EnrichmentRule> enrichRules;
+    private String rootPath;
     private EventMappingSpecification eventMapping;
     private PollingConfiguration schedule;
     private ErrorRouter errorRouter;
@@ -35,6 +39,16 @@ public class PollingCrawlerBuilder<I> {
 
     public PollingCrawlerBuilder<I> ports(CrawlerPorts ports) {
         this.ports = ports;
+        return this;
+    }
+
+    public PollingCrawlerBuilder<I> enrichRules(List<EnrichmentRule> enrichRules) {
+        this.enrichRules = enrichRules;
+        return this;
+    }
+
+    public PollingCrawlerBuilder<I> rootPath(String rootPath) {
+        this.rootPath = rootPath;
         return this;
     }
 
@@ -53,13 +67,13 @@ public class PollingCrawlerBuilder<I> {
         return this;
     }
 
-    public <T, O> Crawler createWith(Transformer<T, O> transformer) {
+    public <P, E, R> Crawler createWith(Normalizer<P, E, R> normalizer) {
         validateRequiredFields();
-        return new Crawler(initializeStrategy(transformer, initializeHandler()), getErrorRouter(), heartBeat);
+        return new Crawler(initializeStrategy(normalizer, initializeHandler()), getErrorRouter(), heartBeat);
     }
 
-    private <T, O> PollingCrawlerStrategy<I, T, O> initializeStrategy(Transformer<T, O> transformer, Handler<String> handler) {
-        return new PollingCrawlerStrategy<>(source, transformer, handler, schedule, getErrorRouter());
+    private <P, E, R> PollingCrawlerStrategy<I, P, E, R> initializeStrategy(Normalizer<P, E, R> normalizer, Handler<String> handler) {
+        return new PollingCrawlerStrategy<>(source, normalizer, handler, schedule, getErrorRouter());
     }
 
     private ErrorRouter getErrorRouter() {
@@ -74,8 +88,8 @@ public class PollingCrawlerBuilder<I> {
                 getErrorRouter());
     }
 
-    public <T, O> Crawler createWith(TransformerFormat<T, O> format) {
-        return createWith(format.pipeline());
+    public <P, E, R> Crawler createWith(NormalizerFormat<P, E, R> format) {
+        return createWith(format.pipelineWith(enrichRules, rootPath));
     }
 
     private void validateRequiredFields() {

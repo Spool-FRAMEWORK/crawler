@@ -42,9 +42,7 @@ public class ItemCapturedHandler implements Handler<String> {
         try {
             ports.bus().emit(captured);
             EventMetadata metadata = new EventMetadata().set(EventMetadataKey.SOURCE, sourceId);
-            Class<?> type = matched.map(TypedDomainMapping::targetType).orElse(null);
-            if (type != null)
-                metadata.set(EventMetadataKey.TYPE, type.toString());
+            matched.map(TypedDomainMapping::targetType).ifPresent(type -> metadata.set(EventMetadataKey.TYPE, type.toString()));
             IdempotencyKey receivedIdempotencyKey = ports.inboxWriter().receive(new InboxItem(
                     captured.idempotencyKey(), metadata, schema,
                     payload, InboxItemStatus.UNPUBLISHED, Instant.now()
