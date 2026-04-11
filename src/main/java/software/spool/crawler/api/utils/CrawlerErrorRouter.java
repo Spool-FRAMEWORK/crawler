@@ -1,9 +1,12 @@
 package software.spool.crawler.api.utils;
 
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.exception.*;
 import software.spool.core.model.failure.*;
 import software.spool.core.port.bus.EventBusEmitter;
+import software.spool.core.port.logging.Logger;
 import software.spool.core.utils.routing.ErrorRouter;
+import software.spool.crawler.api.Crawler;
 
 
 public class CrawlerErrorRouter {
@@ -19,28 +22,8 @@ public class CrawlerErrorRouter {
      * @return a pre-configured error router
      */
     public static ErrorRouter defaults(EventBusEmitter bus) {
+        Logger log = LoggerFactory.getLogger(Crawler.class);
         return new ErrorRouter()
-                .on(SourceOpenException.class,
-                        (e, cause) -> bus.emit(SourceFetchFailed.builder()
-                                .errorMessage(e.getMessage()).build()))
-                .on(SourcePollException.class,
-                        (e, cause) -> bus.emit(SourceFetchFailed.builder()
-                                .errorMessage(e.getMessage()).build()))
-                .on(DeserializationException.class,
-                        (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                .errorMessage(e.getMessage()).build()))
-                .on(SplitException.class,
-                        (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                .errorMessage(e.getMessage()).build()))
-                .on(SerializationException.class,
-                        (e, cause) -> bus.emit(SourceItemCaptureFailed.builder()
-                                .errorMessage(e.getMessage()).build()))
-                .on(InboxWriteException.class,
-                        (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
-                                .from(cause).errorMessage(e.getMessage()).build()))
-                .on(DuplicateEventException.class,
-                        (e, cause) -> bus.emit(InboxItemStoreFailed.builder()
-                                .errorMessage(e.getMessage()).idempotencyKey(e.getIdempotencyKey()).build()))
-                .orElse((e, cause) -> System.out.println(e.getMessage()));
+                .orElse((e, cause) -> log.error(e.getMessage()));
     }
 }
