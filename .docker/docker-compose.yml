@@ -54,6 +54,29 @@ services:
     ports:
       - "3100:3100"
 
+  mimir:
+    image: grafana/mimir:2.14.0
+    container_name: spool-mimir
+    command: [ "-config.file=/etc/mimir/mimir.yaml" ]
+    volumes:
+      - ./mimir.yaml:/etc/mimir/mimir.yaml:ro
+    ports:
+      - "9009:9009"
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.123.0
+    container_name: spool-otel-collector
+    command: [ "--config=/etc/otel-collector.yaml" ]
+    volumes:
+      - ./otel-collector.yaml:/etc/otel-collector.yaml:ro
+    ports:
+      - "4319:4317"
+      - "4320:4318"
+    depends_on:
+      - tempo
+      - loki
+      - mimir
+
   grafana:
     image: grafana/grafana:11.4.0
     container_name: spool-grafana
@@ -68,3 +91,4 @@ services:
     depends_on:
       - tempo
       - loki
+      - mimir
