@@ -17,11 +17,7 @@ public class Pipeline<I, O> {
     public <K> Pipeline<I, K> add(Step<O, K> step) {
         return new Pipeline<>(input -> {
             Result<O> prev = chain.apply(input);
-
-            if (prev instanceof Result.Error<O> err) {
-                return Result.error(err.error());
-            }
-
+            if (prev instanceof Result.Error<O> err) return Result.error(err.error());
             try {
                 O value = ((Result.Ok<O>) prev).value();
                 return Result.ok(step.apply(value));

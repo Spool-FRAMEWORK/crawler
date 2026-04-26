@@ -1,6 +1,8 @@
 package software.spool.crawler.internal.control.pipeline;
 
-import java.util.function.Function;
+import javax.management.AttributeNotFoundException;
 
 @FunctionalInterface
-public interface Step<I, O> extends Function<I, O> {}
+public interface Step<I, O> {
+    O apply(I input) throws AttributeNotFoundException;
+}
