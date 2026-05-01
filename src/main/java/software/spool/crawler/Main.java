@@ -1,6 +1,6 @@
 package software.spool.crawler;
 
-import software.spool.core.adapter.memory.InMemoryEventBroker;
+import software.spool.core.adapter.memory.InMemoryEventBus;
 import software.spool.core.adapter.otel.OTELConfig;
 import software.spool.core.model.spool.SpoolNode;
 import software.spool.core.model.vo.IdempotencyKey;
@@ -21,7 +21,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws IOException {
         OTELConfig.init("crawler");
-        InMemoryEventBroker broker = new InMemoryEventBroker();
+        InMemoryEventBus broker = new InMemoryEventBus();
 
         Crawler with = CrawlerBuilderFactory.poll(new HTTPPollSource("https://data.sec.gov/api/xbrl/frames/us-gaap/Assets/USD/CY2023Q4I.json", "test"))
                 .schedule(PollingConfiguration.every(Duration.ofSeconds(10)))

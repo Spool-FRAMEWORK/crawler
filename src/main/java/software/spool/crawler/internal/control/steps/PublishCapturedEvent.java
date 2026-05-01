@@ -20,9 +20,7 @@ public class PublishCapturedEvent implements Step<PipelineContext, PipelineConte
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
         SourcePayloadCaptured event = ctx.require(CapturedPayloadKeys.CAPTURED_EVENT);
-        publisher.publish(
-                new Destination("spool." + event.getClass().getSimpleName()),
-                new BrokerMessage<>(event, event.getClass().getSimpleName(), Map.of()));
+        publisher.publish(event);
         return ctx;
     }
 }

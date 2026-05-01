@@ -17,7 +17,6 @@ import software.spool.crawler.api.port.source.PollSource;
 import software.spool.crawler.api.utils.CrawlerErrorRouter;
 import software.spool.crawler.api.utils.CrawlerPorts;
 import software.spool.crawler.api.utils.NormalizerFormat;
-import software.spool.crawler.internal.control.ItemCapturedHandler;
 import software.spool.crawler.internal.control.PayloadCapturedHandler;
 import software.spool.crawler.internal.control.steps.*;
 import software.spool.crawler.internal.port.decorator.SafePollSource;
@@ -109,14 +108,6 @@ public class PollingCrawlerBuilder<I> {
     private MetricsRegistry.LongHistogramMetric buildHistogram() {
         return new OpenTelemetryMetricsRegistry()
                 .histogram("spool.captured.payload.size", "", "By");
-    }
-
-    private ItemCapturedHandler initializeHandler() {
-        return new ItemCapturedHandler(
-                source.sourceId(), ports,
-                eventMapping.buildEmitter(ports.bus()),
-                eventMapping.partitionAttributes(),
-                getErrorRouter());
     }
 
     public <P, E, R> Crawler createWith(NormalizerFormat<P, E, R> format) {

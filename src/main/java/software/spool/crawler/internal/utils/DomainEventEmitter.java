@@ -26,7 +26,7 @@ public class DomainEventEmitter {
         for (TypedDomainMapping typed : domainMappings) {
             try {
                 Event event = typed.mapping().resolve(payload, idempotencyKey);
-                bus.publish(new Destination("spool." + event.getClass().getSimpleName()), new BrokerMessage<>(event, event.getClass().getSimpleName(), Map.of()));
+                bus.publish(event);
                 return Optional.of(typed);
             } catch (DeserializationException | SerializationException ignored) {}
         }
