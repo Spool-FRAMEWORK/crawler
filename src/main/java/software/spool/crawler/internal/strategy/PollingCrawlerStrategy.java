@@ -1,6 +1,5 @@
 package software.spool.crawler.internal.strategy;
 
-import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.exception.*;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.utils.polling.CancellationToken;
@@ -26,6 +25,7 @@ public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
         this.source = Objects.requireNonNull(source);
         this.normalizer = Objects.requireNonNull(normalizer);
         this.errorRouter = Objects.requireNonNull(errorRouter);
+
         this.itemmCapturedHandler = Objects.requireNonNull(itemmCapturedHandler);
         this.pollingConfiguration = Objects.requireNonNullElse(pollingConfiguration,
                 PollingConfiguration.every(Duration.ofSeconds(10)));
@@ -35,7 +35,7 @@ public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
     public void execute(CancellationToken token) throws SpoolException {
         pollingConfiguration.scheduler().schedule(
                 () -> { try (PollSource<I> openedSource = this.source.open()) {
-                        normalizer.transform(openedSource.poll())
+                        normalizer.transform(openedSource.fetch())
                             .takeWhile(p -> token.isActive())
                             .forEach(itemmCapturedHandler::handle);
                     } catch (Exception e) { errorRouter.dispatch(e); }

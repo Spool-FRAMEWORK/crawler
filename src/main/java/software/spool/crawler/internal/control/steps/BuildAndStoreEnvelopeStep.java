@@ -38,7 +38,7 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
                 ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey(),
                 buildMetadata(ctx),
                 ctx.require(CapturedPayloadKeys.PAYLOAD),
-                EnvelopeStatus.CAPTURED, 0, Instant.now());
+                EnvelopeStatus.CAPTURED, 0, Instant.now(), null);
     }
 
     private EventMetadata buildMetadata(PipelineContext ctx) throws AttributeNotFoundException {

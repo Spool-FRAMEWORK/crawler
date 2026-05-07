@@ -57,7 +57,7 @@ public class SQLPollSource implements PollSource<ResultSet>, AutoCloseable {
     }
 
     @Override
-    public ResultSet poll() throws SpoolException {
+    public ResultSet fetch() throws SpoolException {
         try {
             closeCurrentResources();
 
