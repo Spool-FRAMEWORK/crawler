@@ -5,7 +5,6 @@ import software.spool.core.adapter.otel.OTELConfig;
 import software.spool.core.model.event.SourcePayloadCaptured;
 import software.spool.core.model.spool.SpoolNode;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.serde.NamingConvention;
 import software.spool.core.utils.media.MediaTypes;
 import software.spool.core.utils.polling.PollingConfiguration;
@@ -25,7 +24,7 @@ public class Main {
         InMemoryEventBus broker = new InMemoryEventBus();
         broker.subscribe(SourcePayloadCaptured.class, System.out::println);
 
-        Crawler with = CrawlerBuilderFactory.poll(new HTTPPollSource("http://plytrox.com:8000/events?limit=10", "test"))
+        Crawler with = CrawlerBuilderFactory.watchdog("", "").poll(new HTTPPollSource("http://plytrox.com:8000/events?limit=10", "test"))
                 .source()
                     .schedule(PollingConfiguration.every(Duration.ofSeconds(60)))
                     .ports(CrawlerPorts.builder()

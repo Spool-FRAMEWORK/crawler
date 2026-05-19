@@ -60,6 +60,7 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -75,6 +76,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.11.2</version>
+                <configuration>
+                    <failOnError>false</failOnError>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -139,19 +143,6 @@
             <groupId>io.github.spool-framework</groupId>
             <artifactId>core</artifactId>
             <version>1.0.18-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
-        </dependency>
-
-        <!-- HikariCP - connection pool -->
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>6.3.0</version>
         </dependency>
     </dependencies>
 </project>
