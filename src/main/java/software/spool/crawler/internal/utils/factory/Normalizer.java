@@ -57,8 +57,8 @@ public record Normalizer<P, E, R>(
     }
 
     @SuppressWarnings("unchecked")
-    public <I> Stream<String> transform(I poll) {
-        P parsed = poll instanceof String raw ? deserializer.deserialize(raw) : (P) poll;
+    public <I> Stream<byte[]> transform(I poll) {
+        P parsed = poll instanceof String raw ? deserializer.deserialize(raw.getBytes()) : (P) poll;
         return enricher.enrich(splitter.split(locator.locate(parsed)), extractor.extract(parsed))
                 .map(serializer::serialize);
     }

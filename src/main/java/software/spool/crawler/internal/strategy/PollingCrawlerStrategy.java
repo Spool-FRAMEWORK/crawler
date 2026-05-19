@@ -16,11 +16,11 @@ public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
     private final PollSource<I> source;
     private final Normalizer<P, E, R> normalizer;
     private final ErrorRouter errorRouter;
-    private final Handler<String> itemmCapturedHandler;
+    private final Handler<byte[]> itemmCapturedHandler;
     private final PollingConfiguration pollingConfiguration;
 
     public PollingCrawlerStrategy(PollSource<I> source, Normalizer<P, E, R> normalizer,
-                                  Handler<String> itemmCapturedHandler,
+                                  Handler<byte[]> itemmCapturedHandler,
                                   PollingConfiguration pollingConfiguration, ErrorRouter errorRouter) {
         this.source = Objects.requireNonNull(source);
         this.normalizer = Objects.requireNonNull(normalizer);

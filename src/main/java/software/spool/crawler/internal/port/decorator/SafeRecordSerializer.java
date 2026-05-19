@@ -35,7 +35,7 @@ public class SafeRecordSerializer<T> implements RecordSerializer<T> {
     }
 
     @Override
-    public String serialize(T record) throws SpoolException {
+    public byte[] serialize(T record) throws SpoolException {
         try {
             return serializer.serialize(record);
         } catch (SpoolException e) {

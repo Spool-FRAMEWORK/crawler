@@ -35,13 +35,13 @@ public class SafePayloadDeserializer<T> implements PayloadDeserializer<T> {
     }
 
     @Override
-    public T deserialize(String payload) throws DeserializationException {
+    public T deserialize(byte[] payload) throws DeserializationException {
         try {
             return deserializer.deserialize(payload);
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
-            throw new DeserializationException(payload, e.getMessage());
+            throw new DeserializationException(new String(payload), e.getMessage());
         }
     }
 }

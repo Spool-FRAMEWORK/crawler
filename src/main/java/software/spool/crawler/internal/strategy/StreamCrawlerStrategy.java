@@ -12,9 +12,9 @@ public class StreamCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
     private final StreamSource<I> source;
     private final Normalizer<P, E, R> normalizer;
     private final ErrorRouter errorRouter;
-    private final Handler<String> payloadCapturedHandler;
+    private final Handler<byte[]> payloadCapturedHandler;
 
-    public StreamCrawlerStrategy(StreamSource<I> source, Normalizer<P, E, R> normalizer, ErrorRouter errorRouter, Handler<String> payloadCapturedHandler) {
+    public StreamCrawlerStrategy(StreamSource<I> source, Normalizer<P, E, R> normalizer, ErrorRouter errorRouter, Handler<byte[]> payloadCapturedHandler) {
         this.source = source;
         this.normalizer = normalizer;
         this.errorRouter = errorRouter;

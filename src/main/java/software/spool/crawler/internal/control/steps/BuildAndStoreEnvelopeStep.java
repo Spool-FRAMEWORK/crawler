@@ -37,6 +37,7 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
         return new Envelope(
                 ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey(),
                 buildMetadata(ctx),
+                ctx.require(CapturedPayloadKeys.MEDIA_TYPE),
                 ctx.require(CapturedPayloadKeys.PAYLOAD),
                 EnvelopeStatus.CAPTURED, 0, Instant.now(), null);
     }

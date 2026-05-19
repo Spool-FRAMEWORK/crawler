@@ -7,8 +7,6 @@ import software.spool.core.port.metrics.MetricsRegistry;
 import javax.management.AttributeNotFoundException;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class PayloadSizeMetricStep implements Step<PipelineContext, PipelineContext> {
     private final MetricsRegistry.LongHistogramMetric histogram;
 
@@ -18,8 +16,8 @@ public class PayloadSizeMetricStep implements Step<PipelineContext, PipelineCont
 
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
-        String payload = ctx.require(CapturedPayloadKeys.PAYLOAD);
-        histogram.record(payload.getBytes(UTF_8).length, Map.of());
+        byte[] payload = ctx.require(CapturedPayloadKeys.PAYLOAD);
+        histogram.record(payload.length, Map.of());
         return ctx;
     }
 }
