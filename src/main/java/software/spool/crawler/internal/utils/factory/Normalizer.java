@@ -2,7 +2,6 @@ package software.spool.crawler.internal.utils.factory;
 
 import software.spool.core.port.serde.*;
 import software.spool.crawler.api.port.PayloadSplitter;
-
 import java.util.stream.Stream;
 
 /**
@@ -57,8 +56,8 @@ public record Normalizer<P, E, R>(
     }
 
     @SuppressWarnings("unchecked")
-    public <I> Stream<byte[]> transform(I poll) {
-        P parsed = poll instanceof String raw ? deserializer.deserialize(raw.getBytes()) : (P) poll;
+    public <I> Stream<byte[]> normalize(I poll) {
+        P parsed = poll instanceof byte[] raw ? deserializer.deserialize(raw) : (P) poll;
         return enricher.enrich(splitter.split(locator.locate(parsed)), extractor.extract(parsed))
                 .map(serializer::serialize);
     }

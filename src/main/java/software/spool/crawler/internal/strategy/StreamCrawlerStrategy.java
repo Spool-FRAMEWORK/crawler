@@ -26,7 +26,7 @@ public class StreamCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
         source.start(
                 m -> {
                     if (token.isCancelled()) return;
-                    normalizer.transform(m)
+                    normalizer.normalize(m)
                             .takeWhile(p -> token.isActive())
                             .forEach(payloadCapturedHandler::handle);
                 },

@@ -24,7 +24,7 @@ public class Main {
         InMemoryEventBus broker = new InMemoryEventBus();
         broker.subscribe(SourcePayloadCaptured.class, System.out::println);
 
-        Crawler with = CrawlerBuilderFactory.watchdog("", "").poll(new HTTPPollSource("http://plytrox.com:8000/events?limit=10", "test"))
+        Crawler with = CrawlerBuilderFactory.poll(new HTTPPollSource("http://plytrox.com:8000/events?limit=10", "test"))
                 .source()
                     .schedule(PollingConfiguration.every(Duration.ofSeconds(60)))
                     .ports(CrawlerPorts.builder()

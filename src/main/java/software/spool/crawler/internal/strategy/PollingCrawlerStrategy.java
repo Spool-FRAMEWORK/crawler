@@ -35,7 +35,7 @@ public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
     public void execute(CancellationToken token) throws SpoolException {
         pollingConfiguration.scheduler().schedule(
                 () -> { try (PollSource<I> openedSource = this.source.open()) {
-                        normalizer.transform(openedSource.fetch())
+                        normalizer.normalize(openedSource.fetch())
                             .takeWhile(p -> token.isActive())
                             .forEach(itemmCapturedHandler::handle);
                     } catch (Exception e) { errorRouter.dispatch(e); }

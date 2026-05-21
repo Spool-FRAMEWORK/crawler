@@ -27,7 +27,6 @@ import java.util.Map;
  * </p>
  */
 public class NormalizerFactory {
-
     private NormalizerFactory() {}
 
     public static Normalizer<JsonNode, JsonNode, JsonNode> jsonArray(List<EnrichmentRule> rules, String rootPath) {
