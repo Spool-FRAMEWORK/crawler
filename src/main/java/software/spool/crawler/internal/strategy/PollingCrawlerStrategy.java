@@ -12,14 +12,14 @@ import software.spool.crawler.api.port.source.PollSource;
 import java.time.Duration;
 import java.util.Objects;
 
-public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
+public class PollingCrawlerStrategy<I> implements CrawlerStrategy {
     private final PollSource<I> source;
-    private final Normalizer<P, E, R> normalizer;
+    private final Normalizer<I> normalizer;
     private final ErrorRouter errorRouter;
     private final Handler<byte[]> itemmCapturedHandler;
     private final PollingConfiguration pollingConfiguration;
 
-    public PollingCrawlerStrategy(PollSource<I> source, Normalizer<P, E, R> normalizer,
+    public PollingCrawlerStrategy(PollSource<I> source, Normalizer<I> normalizer,
                                   Handler<byte[]> itemmCapturedHandler,
                                   PollingConfiguration pollingConfiguration, ErrorRouter errorRouter) {
         this.source = Objects.requireNonNull(source);

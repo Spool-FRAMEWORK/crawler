@@ -25,12 +25,12 @@ class PollingCrawlerAssembler<I> {
         this.config = config;
     }
 
-    <P, E, R> Crawler assemble(Normalizer<P, E, R> normalizer) {
+    Crawler assemble(Normalizer<I> normalizer) {
         config.sourceFacet.validate();
         return new Crawler(initializeStrategy(normalizer, initHandler()), getErrorRouter(), config.heartBeat);
     }
 
-    private <P, E, R> PollingCrawlerStrategy<I, P, E, R> initializeStrategy(Normalizer<P, E, R> normalizer, Handler<byte[]> handler) {
+    private PollingCrawlerStrategy<I> initializeStrategy(Normalizer<I> normalizer, Handler<byte[]> handler) {
         return new PollingCrawlerStrategy<>(config.source, normalizer, handler, config.sourceFacet.schedule, getErrorRouter());
     }
 

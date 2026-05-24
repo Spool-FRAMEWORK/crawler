@@ -18,19 +18,18 @@ import software.spool.crawler.internal.utils.factory.Normalizer;
 import java.util.Objects;
 
 class StreamCrawlerAssembler<I> {
-
     private final StreamCrawlerBuilder<I> config;
 
     StreamCrawlerAssembler(StreamCrawlerBuilder<I> config) {
         this.config = config;
     }
 
-    <P, E, R> Crawler assemble(Normalizer<P, E, R> normalizer) {
+    Crawler assemble(Normalizer<I> normalizer) {
         config.sourceFacet.validate();
         return new Crawler(initializeStrategy(normalizer, initHandler()), getErrorRouter(), config.heartBeat);
     }
 
-    private <P, E, R> StreamCrawlerStrategy<I, P, E, R> initializeStrategy(Normalizer<P, E, R> normalizer, Handler<byte[]> handler) {
+    private StreamCrawlerStrategy<I> initializeStrategy(Normalizer<I> normalizer, Handler<byte[]> handler) {
         return new StreamCrawlerStrategy<>(config.source, normalizer, getErrorRouter(), handler);
     }
 

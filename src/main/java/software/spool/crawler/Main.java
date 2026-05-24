@@ -20,26 +20,5 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        OTELConfig.init("crawler");
-        InMemoryEventBus broker = new InMemoryEventBus();
-        broker.subscribe(SourcePayloadCaptured.class, System.out::println);
-
-        Crawler with = CrawlerBuilderFactory.poll(new HTTPPollSource("http://plytrox.com:8000/events?limit=10", "test"))
-                .source()
-                    .schedule(PollingConfiguration.every(Duration.ofSeconds(60)))
-                    .ports(CrawlerPorts.builder()
-                            .inbox(e -> IdempotencyKey.of("test", e.payload()))
-                            .bus(broker).build())
-                    .mediaType(MediaTypes.PDF)
-                    .enrichRules(List.of())
-                    .and()
-                .mapping()
-                    .convention(NamingConvention.SNAKE_CASE)
-                    .and()
-                .observability()
-                    .withErrorRouter(CrawlerErrorRouter.defaults(broker))
-                    .and()
-                .createWith(StandardNormalizer.JSON_OBJECT);
-        SpoolNode.create().register(with).start();
     }
 }

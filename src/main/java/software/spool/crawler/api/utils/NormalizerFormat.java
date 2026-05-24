@@ -6,6 +6,6 @@ import software.spool.crawler.internal.utils.factory.Normalizer;
 import java.util.List;
 
 @FunctionalInterface
-public interface NormalizerFormat<P, E, R> {
-    Normalizer<P, E, R> pipelineWith(List<EnrichmentRule> enrichmentRules, String rootPath);
+public interface NormalizerFormat<P> {
+    Normalizer<P> pipelineWith(List<EnrichmentRule> enrichmentRules, String rootPath);
 }

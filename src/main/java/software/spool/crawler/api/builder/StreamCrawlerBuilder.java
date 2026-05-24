@@ -35,11 +35,11 @@ public class StreamCrawlerBuilder<I> {
         return observabilityFacet;
     }
 
-    public <P, E, R> Crawler createWith(Normalizer<P, E, R> normalizer) {
+    public Crawler createWith(Normalizer<I> normalizer) {
         return new StreamCrawlerAssembler<>(this).assemble(normalizer);
     }
 
-    public <P, E, R> Crawler createWith(NormalizerFormat<P, E, R> format) {
+    public Crawler createWith(NormalizerFormat<I> format) {
         return createWith(format.pipelineWith(sourceFacet.enrichRules, sourceFacet.rootPath));
     }
 }
