@@ -1,6 +1,7 @@
 package software.spool.crawler.api.builder;
 
 import software.spool.core.adapter.jackson.PayloadDeserializerFactory;
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.model.Event;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.port.bus.EventPublisher;
@@ -31,7 +32,7 @@ public class EventMappingSpecification {
 
     public EventMappingSpecification addDomainEvent(Class<? extends Event> eventType, String... partitionAttributes) {
         if (hasConflict())
-            throw new IllegalArgumentException("Only one can be used at the same time. Please, use addDomainEvent(...) or addPartitionAttributes(...) but not both.");
+            logWarning();
         domainMappings.add(new TypedDomainMapping(eventType,
                 DomainEventMapping.of(deserializerFor(eventType)),
                 List.of(partitionAttributes)));
@@ -40,7 +41,7 @@ public class EventMappingSpecification {
 
     public <D> EventMappingSpecification addDomainEvent(Class<D> dtoType, BiFunction<D, IdempotencyKey, Event> toEvent, String... partitionAttributes) {
         if (hasConflict())
-            throw new IllegalArgumentException("Only one can be used at the same time. Please, use addDomainEvent(...) or addPartitionAttributes(...) but not both.");
+            logWarning();
         domainMappings.add(new TypedDomainMapping(dtoType,
                 DomainEventMapping.of(deserializerFor(dtoType), toEvent),
                 List.of(partitionAttributes)));
@@ -49,9 +50,14 @@ public class EventMappingSpecification {
 
     public EventMappingSpecification addPartitionAttributes(String... attributes) {
         if (hasConflict())
-            throw new IllegalArgumentException("Only one can be used at the same time. Please, use addDomainEvent(...) or addPartitionAttributes(...) but not both.");
+            logWarning();
         defaultPartitionAttributes.addAll(List.of(attributes));
         return this;
+    }
+
+    private void logWarning() {
+        LoggerFactory.getLogger(EventMappingSpecification.class)
+                .warn("Adding partition attributes to an EventMappingSpecification that already has domain mappings. This attributes will be ignored.");
     }
 
     public boolean hasConflict() {
