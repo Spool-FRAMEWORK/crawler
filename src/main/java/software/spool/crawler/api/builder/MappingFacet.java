@@ -4,6 +4,7 @@ import software.spool.core.model.Event;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.port.serde.NamingConvention;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 public class MappingFacet<B> extends CrawlerFacet<B> {
@@ -22,6 +23,11 @@ public class MappingFacet<B> extends CrawlerFacet<B> {
 
     public MappingFacet<B> addDomainEvent(Class<? extends Event> eventType, String... partitionAttributes) {
         spec.addDomainEvent(eventType, partitionAttributes);
+        return this;
+    }
+
+    public MappingFacet<B> addDomainEvent(List<Class<? extends Event>> eventTypeList, String... partitionAttributes) {
+        spec.addDomainEvent(eventTypeList, partitionAttributes);
         return this;
     }
 

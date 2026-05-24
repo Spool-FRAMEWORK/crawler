@@ -13,6 +13,7 @@ import software.spool.crawler.internal.utils.TypedDomainMapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 public class EventMappingSpecification {
@@ -31,17 +32,27 @@ public class EventMappingSpecification {
     }
 
     public EventMappingSpecification addDomainEvent(Class<? extends Event> eventType, String... partitionAttributes) {
-        if (hasConflict())
-            logWarning();
+        if (Objects.isNull(eventType)) return this;
+        if (hasConflict()) logWarning();
         domainMappings.add(new TypedDomainMapping(eventType,
                 DomainEventMapping.of(deserializerFor(eventType)),
                 List.of(partitionAttributes)));
         return this;
     }
 
+    public EventMappingSpecification addDomainEvent(List<Class<? extends Event>> eventTypeList, String... partitionAttributes) {
+        if (hasConflict()) logWarning();
+        eventTypeList.forEach(e ->
+            domainMappings.add(new TypedDomainMapping(e,
+                    DomainEventMapping.of(deserializerFor(e)),
+                    List.of(partitionAttributes)))
+        );
+        return this;
+    }
+
     public <D> EventMappingSpecification addDomainEvent(Class<D> dtoType, BiFunction<D, IdempotencyKey, Event> toEvent, String... partitionAttributes) {
-        if (hasConflict())
-            logWarning();
+        if (Objects.isNull(dtoType)) return this;
+        if (hasConflict()) logWarning();
         domainMappings.add(new TypedDomainMapping(dtoType,
                 DomainEventMapping.of(deserializerFor(dtoType), toEvent),
                 List.of(partitionAttributes)));
@@ -49,8 +60,7 @@ public class EventMappingSpecification {
     }
 
     public EventMappingSpecification addPartitionAttributes(String... attributes) {
-        if (hasConflict())
-            logWarning();
+        if (hasConflict()) logWarning();
         defaultPartitionAttributes.addAll(List.of(attributes));
         return this;
     }
