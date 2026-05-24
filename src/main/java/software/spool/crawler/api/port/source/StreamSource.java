@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  *
  * @param <R> the raw message type delivered to {@code onMessage}
  */
-public interface StreamSource<R> extends Source {
+public interface StreamSource<R> extends Source<R> {
     /**
      * Starts the stream and begins delivering messages to the provided callbacks.
      *

@@ -6,31 +6,31 @@ import software.spool.core.port.serde.NamingConvention;
 
 import java.util.function.BiFunction;
 
-public class MappingFacet<I> extends CrawlerFacet<I> {
+public class MappingFacet<B> extends CrawlerFacet<B> {
 
     private EventMappingSpecification spec;
 
-    MappingFacet(PollingCrawlerBuilder<I> parent, EventMappingSpecification spec) {
+    MappingFacet(B parent, EventMappingSpecification spec) {
         super(parent);
         this.spec = spec;
     }
 
-    public MappingFacet<I> convention(NamingConvention convention) {
+    public MappingFacet<B> convention(NamingConvention convention) {
         this.spec = new EventMappingSpecification(convention);
         return this;
     }
 
-    public MappingFacet<I> addDomainEvent(Class<? extends Event> eventType, String... partitionAttributes) {
+    public MappingFacet<B> addDomainEvent(Class<? extends Event> eventType, String... partitionAttributes) {
         spec.addDomainEvent(eventType, partitionAttributes);
         return this;
     }
 
-    public <D> MappingFacet<I> addDomainEvent(Class<D> dtoType, BiFunction<D, IdempotencyKey, Event> toEvent, String... partitionAttributes) {
+    public <D> MappingFacet<B> addDomainEvent(Class<D> dtoType, BiFunction<D, IdempotencyKey, Event> toEvent, String... partitionAttributes) {
         spec.addDomainEvent(dtoType, toEvent, partitionAttributes);
         return this;
     }
 
-    public MappingFacet<I> addPartitionAttributes(String... attributes) {
+    public MappingFacet<B> addPartitionAttributes(String... attributes) {
         spec.addPartitionAttributes(attributes);
         return this;
     }

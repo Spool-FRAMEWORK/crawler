@@ -1,13 +1,14 @@
 package software.spool.crawler.api.builder;
 
-abstract class CrawlerFacet<I> {
-    protected final PollingCrawlerBuilder<I> parent;
+abstract class CrawlerFacet<B> {
 
-    protected CrawlerFacet(PollingCrawlerBuilder<I> parent) {
+    protected final B parent;
+
+    protected CrawlerFacet(B parent) {
         this.parent = parent;
     }
 
-    public PollingCrawlerBuilder<I> and() {
+    public B and() {
         return parent;
     }
 }

@@ -2,15 +2,15 @@ package software.spool.crawler.api.builder;
 
 import software.spool.core.utils.routing.ErrorRouter;
 
-public class ObservabilityFacet<I> extends CrawlerFacet<I> {
+public class ObservabilityFacet<B> extends CrawlerFacet<B> {
 
     ErrorRouter errorRouter;
 
-    ObservabilityFacet(PollingCrawlerBuilder<I> parent) {
+    ObservabilityFacet(B parent) {
         super(parent);
     }
 
-    public ObservabilityFacet<I> withErrorRouter(ErrorRouter errorRouter) {
+    public ObservabilityFacet<B> withErrorRouter(ErrorRouter errorRouter) {
         this.errorRouter = errorRouter;
         return this;
     }
