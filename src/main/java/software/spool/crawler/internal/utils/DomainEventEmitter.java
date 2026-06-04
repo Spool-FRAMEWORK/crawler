@@ -1,5 +1,6 @@
 package software.spool.crawler.internal.utils;
 
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.exception.SerializationException;
 import software.spool.core.model.Event;
@@ -26,7 +27,9 @@ public class DomainEventEmitter {
                 Event event = typed.mapping().resolve(payload, idempotencyKey);
                 bus.publish(event);
                 return Optional.of(typed);
-            } catch (DeserializationException | SerializationException ignored) {}
+            } catch (DeserializationException | SerializationException ignored) {
+                LoggerFactory.getLogger("CrawlerDomainEmitting").warn("Mapper {} failed: {}", typed.getClass().getSimpleName(), ignored.getMessage());
+            }
         }
         throw new DeserializationException(new String(payload), "No matching domain event mapper found");
     }

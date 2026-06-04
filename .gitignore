@@ -50,3 +50,6 @@ application-local.properties
 secrets/
 
 crawler.xml
+repomix-output.xml
+*CLAUDE*.md
+*-context

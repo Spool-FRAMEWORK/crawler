@@ -2,96 +2,63 @@ package software.spool.crawler.api.utils;
 
 import software.spool.core.port.bus.EventPublisher;
 import software.spool.core.port.decorator.SafeEventPublisher;
+import software.spool.core.port.health.HealthProbe;
+import software.spool.core.port.health.Tracked;
 import software.spool.crawler.api.port.InboxWriter;
 import software.spool.crawler.internal.port.decorator.SafeInboxWriter;
 
-/**
- * Aggregates the external ports required by a crawler strategy into a single
- * immutable value object.
- *
- * <p>
- * Use {@link #builder()} to construct instances:
- * </p>
- * 
- * <pre>{@code
- * CrawlerPorts ports = CrawlerPorts.builder()
- *         .bus(myEventBus)
- *         .inbox(myInboxWriter)
- *         .errorRouter(myErrorRouter)
- *         .build();
- * }</pre>
- */
+import java.util.List;
+
 public class CrawlerPorts {
-    private final InboxWriter inboxWriter;
-    private final EventPublisher bus;
+    private final Tracked<InboxWriter> trackedInboxWriter;
+    private final Tracked<EventPublisher> trackedBus;
 
     private CrawlerPorts(Builder builder) {
-        this.inboxWriter = builder.inboxWriter;
-        this.bus = builder.bus;
+        this.trackedInboxWriter = Tracked.of(SafeInboxWriter.of(builder.inboxWriter), "inbox");
+        this.trackedBus = Tracked.of(SafeEventPublisher.of(builder.bus), "event-bus");
     }
 
-    /**
-     * Returns the {@link InboxWriter} port.
-     *
-     * @return the inbox writer; may be {@code null} if not configured
-     */
     public InboxWriter inboxWriter() {
-        return inboxWriter;
+        return trackedInboxWriter.get();
     }
 
     public EventPublisher bus() {
-        return bus;
+        return trackedBus.get();
     }
 
+    public Tracked<InboxWriter> trackedInboxWriter() {
+        return trackedInboxWriter;
+    }
 
-    /**
-     * Returns a new {@link Builder} for constructing a {@code CrawlerPorts}
-     * instance.
-     *
-     * @return a new builder
-     */
+    public Tracked<EventPublisher> trackedBus() {
+        return trackedBus;
+    }
+
+    public List<HealthProbe> healthProbes() {
+        return List.of(trackedInboxWriter, trackedBus);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    /**
-     * Fluent builder for {@link CrawlerPorts}.
-     */
     public static class Builder {
         private InboxWriter inboxWriter;
         private EventPublisher bus;
 
-        /** Creates a new empty builder. */
         Builder() {
         }
 
-        /**
-         * Sets the {@link InboxWriter} port.
-         *
-         * @param inboxWriter the inbox writer to use
-         * @return this builder for chaining
-         */
         public Builder inbox(InboxWriter inboxWriter) {
-            this.inboxWriter = SafeInboxWriter.of(inboxWriter);
+            this.inboxWriter = inboxWriter;
             return this;
         }
 
-        /**
-         * Sets the {@link EventPublisher} port.
-         *
-         * @param bus the event bus emitter to use
-         * @return this builder for chaining
-         */
         public Builder bus(EventPublisher bus) {
-            this.bus = SafeEventPublisher.of(bus);
+            this.bus = bus;
             return this;
         }
 
-        /**
-         * Builds and returns the configured {@link CrawlerPorts} instance.
-         *
-         * @return a new {@code CrawlerPorts}
-         */
         public CrawlerPorts build() {
             return new CrawlerPorts(this);
         }
