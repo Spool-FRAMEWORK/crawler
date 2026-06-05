@@ -52,4 +52,6 @@ secrets/
 crawler.xml
 repomix-output.xml
 *CLAUDE*.md
+NOTA-*.md
+NEXT-STEPS.md
 *-context
