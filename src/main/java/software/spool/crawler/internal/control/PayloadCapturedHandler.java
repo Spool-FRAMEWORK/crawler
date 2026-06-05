@@ -45,6 +45,7 @@ public class PayloadCapturedHandler implements Handler<byte[]> {
                 })
                 .peekError(e -> {
                     long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, "error"));
                     errorsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     latencyTimer.record(elapsed, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     errorRouter.dispatch(e);

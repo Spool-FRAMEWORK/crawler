@@ -1,6 +1,7 @@
 package software.spool.crawler.api.builder;
 
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
+import software.spool.core.adapter.otel.OpenTelemetryMetricsRegistry;
 import software.spool.core.pipeline.ObservedStep;
 import software.spool.core.pipeline.Pipeline;
 import software.spool.core.pipeline.PipelineContext;
@@ -34,12 +35,12 @@ class PollingCrawlerAssembler<I> {
 
     Crawler assemble(Normalizer<I> normalizer) {
         config.sourceFacet.validate();
-        MetricsRegistry metrics = Objects.requireNonNullElse(config.observabilityFacet.metricsRegistry, MetricsRegistry.NOOP);
+        MetricsRegistry metrics = Objects.requireNonNullElse(config.observabilityFacet.metricsRegistry, new OpenTelemetryMetricsRegistry());
         String sourceId = config.source.sourceId();
-        CounterMetric eventsCounter = metrics.counter(SpoolMetrics.named(SpoolMetrics.Crawler.EVENTS_TOTAL, sourceId), SpoolMetrics.Crawler.EVENTS_TOTAL_DESC, "events");
-        CounterMetric errorsCounter = metrics.counter(SpoolMetrics.named(SpoolMetrics.Crawler.ERRORS_TOTAL, sourceId), SpoolMetrics.Crawler.ERRORS_TOTAL_DESC, "errors");
-        TimerMetric latencyTimer = metrics.timer(SpoolMetrics.named(SpoolMetrics.Crawler.LATENCY, sourceId), SpoolMetrics.Crawler.LATENCY_DESC, "ms");
-        LongHistogramMetric sizeHistogram = metrics.histogram(SpoolMetrics.named("spool.crawler.payload.size", sourceId), "", "By");
+        CounterMetric eventsCounter = metrics.counter(SpoolMetrics.Crawler.EVENTS_TOTAL, SpoolMetrics.Crawler.EVENTS_TOTAL_DESC, "events");
+        CounterMetric errorsCounter = metrics.counter(SpoolMetrics.Crawler.ERRORS_TOTAL, SpoolMetrics.Crawler.ERRORS_TOTAL_DESC, "errors");
+        TimerMetric latencyTimer = metrics.timer(SpoolMetrics.Crawler.LATENCY, SpoolMetrics.Crawler.LATENCY_DESC, "s");
+        LongHistogramMetric sizeHistogram = metrics.histogram("spool.crawler.payload.size", "", "By");
         PolledHealthProbe sourceProbe = PolledHealthProbe.of("source", () -> config.source.open());
         List<HealthProbe> probes = new ArrayList<>(config.sourceFacet.ports.healthProbes());
         probes.add(sourceProbe);

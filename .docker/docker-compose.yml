@@ -54,15 +54,6 @@ services:
     ports:
       - "3100:3100"
 
-  mimir:
-    image: grafana/mimir:2.14.0
-    container_name: spool-mimir
-    command: [ "-config.file=/etc/mimir/mimir.yaml" ]
-    volumes:
-      - ./mimir.yaml:/etc/mimir/mimir.yaml:ro
-    ports:
-      - "9009:9009"
-
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.123.0
     container_name: spool-otel-collector
@@ -72,16 +63,31 @@ services:
     ports:
       - "4319:4317"
       - "4320:4318"
+      - "8889:8889"
     depends_on:
       - tempo
       - loki
-      - mimir
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: spool-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
 
   grafana:
     image: grafana/grafana:11.4.0
     container_name: spool-grafana
     volumes:
       - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - ./grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "3000:3000"
     environment:
@@ -91,4 +97,4 @@ services:
     depends_on:
       - tempo
       - loki
-      - mimir
+      - prometheus
