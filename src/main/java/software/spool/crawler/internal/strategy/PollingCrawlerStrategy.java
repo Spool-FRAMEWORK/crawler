@@ -12,19 +12,20 @@ import software.spool.crawler.api.port.source.PollSource;
 import java.time.Duration;
 import java.util.Objects;
 
-public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
+public class PollingCrawlerStrategy<I> implements CrawlerStrategy {
     private final PollSource<I> source;
-    private final Normalizer<P, E, R> normalizer;
+    private final Normalizer<I> normalizer;
     private final ErrorRouter errorRouter;
-    private final Handler<String> itemmCapturedHandler;
+    private final Handler<byte[]> itemmCapturedHandler;
     private final PollingConfiguration pollingConfiguration;
 
-    public PollingCrawlerStrategy(PollSource<I> source, Normalizer<P, E, R> normalizer,
-                                  Handler<String> itemmCapturedHandler,
+    public PollingCrawlerStrategy(PollSource<I> source, Normalizer<I> normalizer,
+                                  Handler<byte[]> itemmCapturedHandler,
                                   PollingConfiguration pollingConfiguration, ErrorRouter errorRouter) {
         this.source = Objects.requireNonNull(source);
         this.normalizer = Objects.requireNonNull(normalizer);
         this.errorRouter = Objects.requireNonNull(errorRouter);
+
         this.itemmCapturedHandler = Objects.requireNonNull(itemmCapturedHandler);
         this.pollingConfiguration = Objects.requireNonNullElse(pollingConfiguration,
                 PollingConfiguration.every(Duration.ofSeconds(10)));
@@ -34,7 +35,7 @@ public class PollingCrawlerStrategy<I, P, E, R> implements CrawlerStrategy {
     public void execute(CancellationToken token) throws SpoolException {
         pollingConfiguration.scheduler().schedule(
                 () -> { try (PollSource<I> openedSource = this.source.open()) {
-                        normalizer.transform(openedSource.poll())
+                        normalizer.normalize(openedSource.fetch())
                             .takeWhile(p -> token.isActive())
                             .forEach(itemmCapturedHandler::handle);
                     } catch (Exception e) { errorRouter.dispatch(e); }

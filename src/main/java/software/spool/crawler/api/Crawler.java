@@ -2,12 +2,15 @@ package software.spool.crawler.api;
 
 import software.spool.core.model.spool.SpoolModule;
 import software.spool.core.model.spool.SpoolNode;
+import software.spool.core.port.health.HealthCheck;
+import software.spool.core.port.health.HealthProbe;
 import software.spool.core.port.health.ModuleHealthPayload;
 import software.spool.core.port.watchdog.ModuleHeartBeat;
 import software.spool.core.utils.polling.CancellationToken;
 import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.api.strategy.CrawlerStrategy;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Crawler implements SpoolModule {
@@ -15,11 +18,13 @@ public class Crawler implements SpoolModule {
     private volatile CancellationToken token;
     private final ErrorRouter errorRouter;
     private final ModuleHeartBeat heartBeat;
+    private final List<HealthProbe> probes;
 
-    public Crawler(CrawlerStrategy strategy, ErrorRouter errorRouter, ModuleHeartBeat heartBeat) {
+    public Crawler(CrawlerStrategy strategy, ErrorRouter errorRouter, ModuleHeartBeat heartBeat, List<HealthProbe> probes) {
         this.strategy = strategy;
         this.errorRouter = errorRouter;
         this.heartBeat = heartBeat;
+        this.probes = probes;
         this.token = CancellationToken.NOOP;
     }
 
@@ -45,6 +50,12 @@ public class Crawler implements SpoolModule {
 
     @Override
     public ModuleHealthPayload checkHealth() {
-        return token.isActive() ? ModuleHealthPayload.healthy(heartBeat.identity().moduleId()) : ModuleHealthPayload.degraded(heartBeat.identity().moduleId(), null);
+        String moduleId = heartBeat.identity().moduleId();
+        if (!token.isActive())
+            return ModuleHealthPayload.degraded(moduleId, List.of());
+        List<HealthCheck> checks = probes.stream()
+                .map(HealthProbe::probe)
+                .toList();
+        return ModuleHealthPayload.of(moduleId, checks);
     }
 }

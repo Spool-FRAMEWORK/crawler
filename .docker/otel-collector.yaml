@@ -13,8 +13,9 @@ exporters:
   debug:
     verbosity: detailed
 
-  prometheusremotewrite:
-    endpoint: http://mimir:9009/api/v1/push
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    add_metric_suffixes: false
     resource_to_telemetry_conversion:
       enabled: true
 
@@ -23,4 +24,4 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, prometheusremotewrite]
+      exporters: [debug, prometheus]

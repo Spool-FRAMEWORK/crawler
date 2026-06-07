@@ -1,5 +1,7 @@
 package software.spool.crawler.api.port.source;
 
+import software.spool.core.exception.SpoolException;
+
 /**
  * Base internal interface for all types of data sources.
  *
@@ -18,13 +20,15 @@ package software.spool.crawler.api.port.source;
  * {@link WebhookSource} instead.
  * </p>
  */
-public interface Source extends AutoCloseable {
+public interface Source<R> extends AutoCloseable {
     /**
      * Returns the unique identifier of this source.
      *
      * @return a non-null string that uniquely identifies this source instance
      */
     String sourceId();
+
+    R fetch() throws SpoolException;
 
     /**
      * Releases any resources held by this source.

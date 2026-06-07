@@ -8,7 +8,7 @@ import software.spool.crawler.api.utils.NormalizerFormat;
  *
  * <p>
  * The crawler calls {@link #open()} once before starting the polling cycle
- * and {@link #poll()} to retrieve the raw data. Results are then fed into the
+ * and {@link #fetch()} to retrieve the raw data. Results are then fed into the
  * configured {@link NormalizerFormat} pipeline for
  * deserialization, splitting, and serialization.
  * </p>
@@ -19,9 +19,9 @@ import software.spool.crawler.api.utils.NormalizerFormat;
  * {@link java.lang.AutoCloseable} via {@link Source}).
  * </p>
  *
- * @param <R> the raw type returned by {@link #poll()}
+ * @param <R> the raw type returned by {@link #fetch()}
  */
-public interface PollSource<R> extends Source {
+public interface PollSource<R> extends Source<R> {
     /**
      * Fetches the next payload from the source.
      *
@@ -34,7 +34,7 @@ public interface PollSource<R> extends Source {
      * @return the raw payload; must not be {@code null}
      * @throws SpoolException if the payload could not be retrieved
      */
-    R poll() throws SpoolException;
+    R fetch() throws SpoolException;
 
     /**
      * Opens (or re-opens) the source and returns itself.
@@ -49,16 +49,4 @@ public interface PollSource<R> extends Source {
     default PollSource<R> open() {
         return this;
     }
-
-    /**
-     * Returns the unique identifier of this source.
-     *
-     * <p>
-     * Used as a correlation key in emitted events and as part of the idempotency
-     * key derivation. Should stay constant across invocations.
-     * </p>
-     *
-     * @return a non-null, non-empty string that uniquely identifies this source
-     */
-    String sourceId();
 }

@@ -7,10 +7,10 @@ datasources:
   - name: Loki
     type: loki
     url: http://spool-loki:3100
-  - name: Mimir
+  - name: Prometheus
+    uid: spool-prometheus
     type: prometheus
     access: proxy
-    url: http://mimir:9009/prometheus
+    url: http://spool-prometheus:9090
     jsonData:
-      prometheusType: Mimir
       httpMethod: POST

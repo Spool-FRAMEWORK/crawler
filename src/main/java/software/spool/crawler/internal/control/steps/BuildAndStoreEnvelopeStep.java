@@ -5,6 +5,7 @@ import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.vo.*;
 import software.spool.core.pipeline.PipelineContext;
 import software.spool.core.pipeline.Step;
+import software.spool.core.port.health.Tracked;
 import software.spool.core.port.serde.RecordSerializer;
 import software.spool.crawler.api.port.InboxWriter;
 import software.spool.crawler.internal.utils.TypedDomainMapping;
@@ -15,30 +16,37 @@ import java.util.List;
 import java.util.Optional;
 
 public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, PipelineContext> {
-    private final InboxWriter inboxWriter;
+    private final Tracked<InboxWriter> trackedInboxWriter;
     private final RecordSerializer<PartitionKeySchema> serializer;
     private final List<String> defaultPartitionAttributes;
 
-    public BuildAndStoreEnvelopeStep(InboxWriter inboxWriter, RecordSerializer<PartitionKeySchema> serializer, List<String> defaultPartitionAttributes) {
-        this.inboxWriter = inboxWriter;
+    public BuildAndStoreEnvelopeStep(Tracked<InboxWriter> trackedInboxWriter, RecordSerializer<PartitionKeySchema> serializer, List<String> defaultPartitionAttributes) {
+        this.trackedInboxWriter = trackedInboxWriter;
         this.serializer = serializer;
         this.defaultPartitionAttributes = defaultPartitionAttributes;
     }
 
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
-        IdempotencyKey key = inboxWriter.receive(buildEnvelope(ctx));
-        if (key == null)
-            throw new DuplicateEventException(ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey());
-        return ctx.with(CapturedPayloadKeys.RECEIVED_KEY, key);
+        try {
+            IdempotencyKey key = trackedInboxWriter.get().receive(buildEnvelope(ctx));
+            if (key == null)
+                throw new DuplicateEventException(ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey());
+            trackedInboxWriter.recordSuccess();
+            return ctx.with(CapturedPayloadKeys.RECEIVED_KEY, key);
+        } catch (Exception e) {
+            trackedInboxWriter.recordFailure(e.getMessage());
+            throw e;
+        }
     }
 
     private Envelope buildEnvelope(PipelineContext ctx) throws AttributeNotFoundException {
         return new Envelope(
                 ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey(),
                 buildMetadata(ctx),
+                ctx.require(CapturedPayloadKeys.MEDIA_TYPE),
                 ctx.require(CapturedPayloadKeys.PAYLOAD),
-                EnvelopeStatus.CAPTURED, 0, Instant.now());
+                EnvelopeStatus.CAPTURED, 0, Instant.now(), null);
     }
 
     private EventMetadata buildMetadata(PipelineContext ctx) throws AttributeNotFoundException {

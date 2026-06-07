@@ -3,11 +3,10 @@ package software.spool.crawler.internal.control.steps;
 import software.spool.core.pipeline.PipelineContext;
 import software.spool.core.pipeline.Step;
 import software.spool.core.port.metrics.MetricsRegistry;
+import software.spool.core.port.metrics.SpoolMetrics;
 
 import javax.management.AttributeNotFoundException;
 import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class PayloadSizeMetricStep implements Step<PipelineContext, PipelineContext> {
     private final MetricsRegistry.LongHistogramMetric histogram;
@@ -18,8 +17,9 @@ public class PayloadSizeMetricStep implements Step<PipelineContext, PipelineCont
 
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
-        String payload = ctx.require(CapturedPayloadKeys.PAYLOAD);
-        histogram.record(payload.getBytes(UTF_8).length, Map.of());
+        byte[] payload = ctx.require(CapturedPayloadKeys.PAYLOAD);
+        String sourceId = ctx.require(CapturedPayloadKeys.SOURCE_ID);
+        histogram.record(payload.length, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
         return ctx;
     }
 }

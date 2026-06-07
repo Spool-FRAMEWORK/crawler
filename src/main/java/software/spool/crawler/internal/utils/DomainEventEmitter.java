@@ -1,15 +1,14 @@
 package software.spool.crawler.internal.utils;
 
+import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.exception.DeserializationException;
 import software.spool.core.exception.SerializationException;
 import software.spool.core.model.Event;
 import software.spool.core.model.vo.IdempotencyKey;
-import software.spool.core.port.bus.BrokerMessage;
-import software.spool.core.port.bus.Destination;
 import software.spool.core.port.bus.EventPublisher;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class DomainEventEmitter {
@@ -21,15 +20,17 @@ public class DomainEventEmitter {
         this.domainMappings = domainMappings;
     }
 
-    public Optional<TypedDomainMapping> emit(String payload, IdempotencyKey idempotencyKey) {
+    public Optional<TypedDomainMapping> emit(byte[] payload, IdempotencyKey idempotencyKey) {
         if (domainMappings.isEmpty()) return Optional.empty();
         for (TypedDomainMapping typed : domainMappings) {
             try {
                 Event event = typed.mapping().resolve(payload, idempotencyKey);
-                bus.publish(new Destination("spool." + event.getClass().getSimpleName()), new BrokerMessage<>(event, event.getClass().getSimpleName(), Map.of()));
+                bus.publish(event);
                 return Optional.of(typed);
-            } catch (DeserializationException | SerializationException ignored) {}
+            } catch (DeserializationException | SerializationException ignored) {
+                LoggerFactory.getLogger("CrawlerDomainEmitting").warn("Mapper {} failed: {}", typed.getClass().getSimpleName(), ignored.getMessage());
+            }
         }
-        throw new DeserializationException(payload, "No matching domain event mapper found");
+        throw new DeserializationException(new String(payload), "No matching domain event mapper found");
     }
 }

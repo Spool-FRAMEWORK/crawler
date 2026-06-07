@@ -9,7 +9,7 @@ import software.spool.crawler.api.port.source.PollSource;
  * typed {@link SourcePollException} instances.
  *
  * <p>
- * If the delegate's {@link #poll()} method throws a
+ * If the delegate's {@link #fetch()} method throws a
  * {@link SpoolException} subclass, it is re-thrown as-is. Any other
  * {@link Exception} is wrapped in a new {@link SourcePollException}. This
  * guarantees the crawler strategy always receives typed exceptions that can be
@@ -36,9 +36,9 @@ public class SafePollSource<R> implements PollSource<R> {
     }
 
     @Override
-    public R poll() throws SpoolException {
+    public R fetch() throws SpoolException {
         try {
-            return source.poll();
+            return source.fetch();
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {
