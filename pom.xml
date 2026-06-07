@@ -44,9 +44,6 @@
             <id>github</id>
             <name>Spool-FRAMEWORK GitHub Packages</name>
             <url>https://maven.pkg.github.com/Spool-FRAMEWORK/*</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
     </repositories>
 
@@ -57,7 +54,7 @@
         </repository>
         <snapshotRepository>
             <id>github</id>
-            <url>https://maven.pkg.github.com/Spool-FRAMEWORK/core</url>
+            <url>https://maven.pkg.github.com/Spool-FRAMEWORK/crawler</url>
         </snapshotRepository>
     </distributionManagement>
 
