@@ -26,6 +26,13 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
         this.defaultPartitionAttributes = defaultPartitionAttributes;
     }
 
+    /**
+     * Stores the envelope in the inbox and keeps its key in the context.
+     *
+     * <p>A duplicate is rethrown as {@link DuplicateEventException} but is not a failure of the writer: the inbox
+     * answered and refused the envelope on purpose, so the tracked writer is recorded as working. Any other
+     * exception is recorded as a failure.</p>
+     */
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
         try {
@@ -34,6 +41,9 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
                 throw new DuplicateEventException(ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey());
             trackedInboxWriter.recordSuccess();
             return ctx.with(CapturedPayloadKeys.RECEIVED_KEY, key);
+        } catch (DuplicateEventException e) {
+            trackedInboxWriter.recordSuccess();
+            throw e;
         } catch (Exception e) {
             trackedInboxWriter.recordFailure(e.getMessage());
             throw e;
