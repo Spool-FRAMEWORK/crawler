@@ -1,5 +1,6 @@
 package software.spool.crawler.internal.control;
 
+import software.spool.core.exception.DuplicateEventException;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.pipeline.Pipeline;
 import software.spool.core.pipeline.PipelineContext;
@@ -11,6 +12,13 @@ import software.spool.crawler.internal.control.steps.CapturedPayloadKeys;
 
 import java.util.Map;
 
+/**
+ * Runs the pipeline for every captured payload and counts what happened to it: {@code success}, {@code error} or
+ * {@code duplicate}.
+ *
+ * <p>A duplicate is the inbox refusing an event it already has, which is not a failure, so it is counted as its own
+ * status and does not add to the errors counter. It is still routed, and its latency is still recorded.</p>
+ */
 public class PayloadCapturedHandler implements Handler<byte[]> {
     private final Pipeline<PipelineContext, PipelineContext> pipeline;
     private final String sourceId;
@@ -45,8 +53,9 @@ public class PayloadCapturedHandler implements Handler<byte[]> {
                 })
                 .peekError(e -> {
                     long elapsed = (System.nanoTime() - start) / 1_000_000;
-                    eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, "error"));
-                    errorsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
+                    boolean duplicate = e instanceof DuplicateEventException;
+                    eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, duplicate ? "duplicate" : "error"));
+                    if (!duplicate) errorsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     latencyTimer.record(elapsed, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     errorRouter.dispatch(e);
                 });
