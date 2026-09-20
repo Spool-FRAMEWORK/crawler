@@ -36,7 +36,7 @@ public class CrawlerErrorRouter {
      */
     public static ErrorRouter defaults(EventPublisher bus, Logger log) {
         return new ErrorRouter()
-                .on(DuplicateEventException.class, (e, event) -> log.debug("Rejected duplicate event {}", e.getIdempotencyKey()))
+                .on(DuplicateEventException.class, (e, event) -> log.info("Rejected duplicate event {}", e.getIdempotencyKey()))
                 .orElse((e, cause) -> log.error(e.getMessage()));
     }
 }

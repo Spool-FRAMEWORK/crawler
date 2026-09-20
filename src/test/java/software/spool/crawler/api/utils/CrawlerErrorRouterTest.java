@@ -24,10 +24,10 @@ class CrawlerErrorRouterTest {
     }
 
     @Test
-    void aDuplicateEventIsRejectedWithoutThrowing() {
+    void aDuplicateEventIsRejectedAndLoggedAsInfo() {
         router.dispatch(new DuplicateEventException(IdempotencyKey.of("source", "payload".getBytes())));
 
-        assertThat(log.lines).hasSize(1).first().asString().startsWith("DEBUG");
+        assertThat(log.lines).hasSize(1).first().asString().startsWith("INFO");
     }
 
     @Test
