@@ -29,4 +29,15 @@ import software.spool.crawler.api.builder.CrawlerBuilderFactory;
  */
 public interface CrawlerStrategy {
     void execute(CancellationToken token) throws SpoolException;
+
+    /**
+     * Releases what the strategy keeps open between cycles, once the crawler has cancelled its token.
+     *
+     * <p>
+     * A stream strategy stops its source here. The default does nothing, which suits a polling strategy: it opens
+     * and closes its source in every cycle, so nothing stays open.
+     * </p>
+     */
+    default void stop() {
+    }
 }

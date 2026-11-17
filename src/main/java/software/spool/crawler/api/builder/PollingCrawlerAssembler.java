@@ -17,6 +17,7 @@ import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.api.Crawler;
 import software.spool.crawler.api.utils.CrawlerErrorRouter;
 import software.spool.crawler.internal.control.PayloadCapturedHandler;
+import software.spool.crawler.internal.control.PollSourceReachability;
 import software.spool.crawler.internal.control.steps.*;
 import software.spool.crawler.internal.strategy.PollingCrawlerStrategy;
 import software.spool.crawler.internal.utils.factory.Normalizer;
@@ -41,7 +42,7 @@ class PollingCrawlerAssembler<I> {
         CounterMetric errorsCounter = metrics.counter(SpoolMetrics.Crawler.ERRORS_TOTAL, SpoolMetrics.Crawler.ERRORS_TOTAL_DESC, "errors");
         TimerMetric latencyTimer = metrics.timer(SpoolMetrics.Crawler.LATENCY, SpoolMetrics.Crawler.LATENCY_DESC, "s");
         LongHistogramMetric sizeHistogram = metrics.histogram("spool.crawler.payload.size", "", "By");
-        PolledHealthProbe sourceProbe = PolledHealthProbe.of("source", () -> config.source.open());
+        PolledHealthProbe sourceProbe = PolledHealthProbe.of("source", new PollSourceReachability(config.source));
         List<HealthProbe> probes = new ArrayList<>(config.sourceFacet.ports.healthProbes());
         probes.add(sourceProbe);
         Handler<byte[]> handler = initHandler(eventsCounter, errorsCounter, latencyTimer, sizeHistogram);

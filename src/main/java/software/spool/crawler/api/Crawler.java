@@ -44,6 +44,7 @@ public class Crawler implements SpoolModule {
         if (!token.isActive()) return;
         Objects.requireNonNull(permit);
         token.cancel();
+        strategy.stop();
         heartBeat.stop();
         token = CancellationToken.NOOP;
     }

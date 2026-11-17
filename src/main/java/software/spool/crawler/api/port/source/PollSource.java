@@ -7,8 +7,8 @@ import software.spool.crawler.api.utils.NormalizerFormat;
  * A data source that is polled on demand to fetch the next payload.
  *
  * <p>
- * The crawler calls {@link #open()} once before starting the polling cycle
- * and {@link #fetch()} to retrieve the raw data. Results are then fed into the
+ * In every polling cycle the crawler calls {@link #open()}, then {@link #fetch()} to retrieve the raw data, and
+ * then {@link #close()}. Results are then fed into the
  * configured {@link NormalizerFormat} pipeline for
  * deserialization, splitting, and serialization.
  * </p>
@@ -37,11 +37,12 @@ public interface PollSource<R> extends Source<R> {
     R fetch() throws SpoolException;
 
     /**
-     * Opens (or re-opens) the source and returns itself.
+     * Opens the source for one polling cycle and returns itself.
      *
      * <p>
-     * Override to perform any connection setup before polling begins. The
-     * default implementation is a no-op that simply returns {@code this}.
+     * Called at the start of every cycle, and by the crawler's health check, which closes the source right after.
+     * Override to set up a connection for the cycle. The default implementation is a no-op that simply returns
+     * {@code this}.
      * </p>
      *
      * @return this source instance, ready to be polled

@@ -1,0 +1,67 @@
+package software.spool.crawler.internal.strategy;
+
+import org.junit.jupiter.api.Test;
+import software.spool.core.utils.polling.CancellationToken;
+import software.spool.core.utils.polling.PollingConfiguration;
+import software.spool.core.utils.polling.PollingPolicy;
+import software.spool.core.utils.routing.ErrorRouter;
+import software.spool.crawler.api.port.source.PollSource;
+import software.spool.crawler.internal.utils.factory.Normalizer;
+
+import java.time.Duration;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+class PollingCrawlerStrategyTest {
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void execute_opensAndClosesTheSourceInEveryCycle() {
+        CountingPollSource source = new CountingPollSource();
+        Normalizer<String> normalizer = mock(Normalizer.class);
+        when(normalizer.normalize(any())).thenReturn(Stream.empty());
+        PollingConfiguration twoCycles = new PollingConfiguration(
+                (task, policy, token) -> {
+                    task.run();
+                    task.run();
+                },
+                PollingPolicy.every(Duration.ofSeconds(1)));
+        PollingCrawlerStrategy<String> strategy =
+                new PollingCrawlerStrategy<>(source, normalizer, payload -> {}, twoCycles, new ErrorRouter());
+
+        strategy.execute(CancellationToken.create());
+
+        assertThat(source.opened).isEqualTo(2);
+        assertThat(source.closed).isEqualTo(2);
+    }
+
+    private static final class CountingPollSource implements PollSource<String> {
+        private int opened;
+        private int closed;
+
+        @Override
+        public PollSource<String> open() {
+            opened++;
+            return this;
+        }
+
+        @Override
+        public void close() {
+            closed++;
+        }
+
+        @Override
+        public String fetch() {
+            return "";
+        }
+
+        @Override
+        public String sourceId() {
+            return "counting";
+        }
+    }
+}

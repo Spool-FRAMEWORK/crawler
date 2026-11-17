@@ -7,11 +7,17 @@ import software.spool.crawler.api.strategy.CrawlerStrategy;
 public class CapturingCrawlerStrategy implements CrawlerStrategy {
     private CancellationToken lastToken;
     private int executeCount;
+    private int stopCount;
 
     @Override
     public void execute(CancellationToken token) throws SpoolException {
         this.lastToken = token;
         this.executeCount++;
+    }
+
+    @Override
+    public void stop() {
+        this.stopCount++;
     }
 
     public CancellationToken lastToken() {
@@ -24,5 +30,9 @@ public class CapturingCrawlerStrategy implements CrawlerStrategy {
 
     public int executeCount() {
         return executeCount;
+    }
+
+    public int stopCount() {
+        return stopCount;
     }
 }

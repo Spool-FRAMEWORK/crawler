@@ -50,6 +50,25 @@ class CrawlerTest {
     }
 
     @Test
+    void stop_afterStart_stopsTheStrategyOnce() {
+        crawler.start(permit);
+
+        crawler.stop(permit);
+
+        assertThat(strategy.stopCount()).isEqualTo(1);
+    }
+
+    @Test
+    void stop_whenAlreadyStopped_doesNotStopTheStrategyAgain() {
+        crawler.start(permit);
+        crawler.stop(permit);
+
+        crawler.stop(permit);
+
+        assertThat(strategy.stopCount()).isEqualTo(1);
+    }
+
+    @Test
     void checkHealth_whenStopped_returnsDegraded() {
         assertThat(crawler.checkHealth().status()).isEqualTo(HealthStatus.DEGRADED);
     }

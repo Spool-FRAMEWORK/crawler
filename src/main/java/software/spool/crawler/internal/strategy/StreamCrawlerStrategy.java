@@ -36,4 +36,9 @@ public class StreamCrawlerStrategy<I> implements CrawlerStrategy {
                 }
         );
     }
+
+    @Override
+    public void stop() {
+        source.stop();
+    }
 }
