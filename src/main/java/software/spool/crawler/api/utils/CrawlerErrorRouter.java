@@ -15,12 +15,13 @@ public class CrawlerErrorRouter {
     }
 
     /**
-     * Creates the default {@link ErrorRouter} wired to the given event bus.
+     * Creates the default {@link ErrorRouter}, which writes the failures to the log of the crawler. It publishes
+     * nothing on the bus.
      *
      * <p>A duplicate event is the inbox doing its job, so it is rejected without an error in the log.
      * Anything else is still logged as an error.</p>
      *
-     * @param bus the event bus emitter used for publishing failure events
+     * @param bus the event bus, kept so the signature does not change
      * @return a pre-configured error router
      */
     public static ErrorRouter defaults(EventPublisher bus) {
@@ -30,7 +31,7 @@ public class CrawlerErrorRouter {
     /**
      * Same as {@link #defaults(EventPublisher)}, writing to the given logger.
      *
-     * @param bus the event bus emitter used for publishing failure events
+     * @param bus the event bus, kept so the signature does not change
      * @param log where the routed errors are written
      * @return a pre-configured error router
      */
