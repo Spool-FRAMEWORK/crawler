@@ -21,6 +21,7 @@
   - [Custom Error Routing](#custom-error-routing)
 - [Key Concepts](#key-concepts)
 - [Built-in Normalizer Formats](#built-in-normalizer-formats)
+- [Composing a Normalizer](#composing-a-normalizer)
 - [License](#license)
 
 ---
@@ -240,6 +241,38 @@ Crawler crawler = CrawlerBuilderFactory.poll(source)
 | `StandardNormalizer.YAML_ARRAY` | `byte[]` | Parse YAML sequence → split → serialize each element. |
 | `StandardNormalizer.RESULT_SET` | `ResultSet` | Project each row → serialize to JSON. |
 | `StandardNormalizer.IN_MEMORY` | `Object` | Pass objects directly without serialization. |
+
+---
+
+## Composing a Normalizer
+
+A normalizer is a chain of steps between named stages. `StandardNormalizers` returns the plan of each built-in format, so a step can be added or replaced without copying the rest. The JSON and YAML plans publish `raw`, `deserialized`, `extracted`, `located`, `split` and `serialized` (`StandardNormalizers.DESERIALIZED`, `SPLIT` and so on). Each stage has a type, so a step that does not fit does not compile.
+
+```java
+Normalizer<byte[]> normalizer = StandardNormalizers.jsonArray(rules, "data.items")
+        .after(StandardNormalizers.DESERIALIZED, "uppercase-names", new UppercaseNames())
+        .build();
+
+Crawler crawler = CrawlerBuilderFactory.poll(source)
+        // ...
+        .createWith(normalizer);
+```
+
+`replace(from, to, name, step)` swaps the step between two stages, and `NormalizerPlan.from(Stage.RAW).then(...)` builds a normalizer from scratch. `describe()` prints the chain: `[raw] deserialize [deserialized] uppercase-names [deserialized] extract ...`.
+
+### Steps a descriptor can name
+
+Annotate a `Step` with `@NormalizerStep` so that a descriptor can use it by name. The class has to be public, concrete and have a public constructor without arguments, and its two types have to be concrete:
+
+```java
+@NormalizerStep("UPPERCASE_NAMES")
+public class UppercaseNames implements Step<JsonNode, JsonNode> {
+    @Override
+    public JsonNode apply(JsonNode document) { ... }
+}
+```
+
+The crawler ships an annotation processor that checks those rules at compile time and lists every step in `META-INF/spool/normalizer-steps`, with its input and output types. The DSL reads that list from every jar on the classpath and checks each combination when the descriptor loads. From JDK 23, `javac` no longer runs the processors it finds on the classpath unless asked to: set `<proc>full</proc>` in `maven-compiler-plugin`. How to name steps in a descriptor is in the [DSL README](https://github.com/Spool-FRAMEWORK/dsl#composing-a-normalizer).
 
 ---
 

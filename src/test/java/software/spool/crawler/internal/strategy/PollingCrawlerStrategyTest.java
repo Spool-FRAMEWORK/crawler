@@ -6,7 +6,7 @@ import software.spool.core.utils.polling.PollingConfiguration;
 import software.spool.core.utils.polling.PollingPolicy;
 import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.api.port.source.PollSource;
-import software.spool.crawler.internal.utils.factory.Normalizer;
+import software.spool.crawler.api.normalizer.Normalizer;
 
 import java.time.Duration;
 import java.util.stream.Stream;

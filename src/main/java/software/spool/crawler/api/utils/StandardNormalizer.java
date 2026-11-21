@@ -1,8 +1,8 @@
 package software.spool.crawler.api.utils;
 
 import software.spool.core.port.serde.EnrichmentRule;
-import software.spool.crawler.internal.utils.factory.Normalizer;
-import software.spool.crawler.internal.utils.factory.NormalizerFactory;
+import software.spool.crawler.api.normalizer.Normalizer;
+import software.spool.crawler.api.normalizer.StandardNormalizers;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -13,11 +13,11 @@ public final class StandardNormalizer {
 
         private StandardNormalizer() {}
 
-        public static final NormalizerFormat<byte[]>    JSON_OBJECT = NormalizerFactory::jsonObject;
-        public static final NormalizerFormat<byte[]>    JSON_ARRAY  = NormalizerFactory::jsonArray;
-        public static final NormalizerFormat<byte[]>    YAML_ARRAY  = NormalizerFactory::yamlArray;
-        public static final NormalizerFormat<ResultSet> RESULT_SET  = (r, p) -> NormalizerFactory.resultSet();
-        public static final NormalizerFormat<Object>    IN_MEMORY   = NormalizerFactory::inMemory;
+        public static final NormalizerFormat<byte[]>    JSON_OBJECT = (rules, rootPath) -> StandardNormalizers.jsonObject(rules, rootPath).build();
+        public static final NormalizerFormat<byte[]>    JSON_ARRAY  = (rules, rootPath) -> StandardNormalizers.jsonArray(rules, rootPath).build();
+        public static final NormalizerFormat<byte[]>    YAML_ARRAY  = (rules, rootPath) -> StandardNormalizers.yamlArray(rules, rootPath).build();
+        public static final NormalizerFormat<ResultSet> RESULT_SET  = (rules, rootPath) -> StandardNormalizers.resultSet().build();
+        public static final NormalizerFormat<Object>    IN_MEMORY   = (rules, rootPath) -> StandardNormalizers.inMemory(rules, rootPath).build();
 
         public static final class Builder {
 

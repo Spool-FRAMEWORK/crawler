@@ -5,7 +5,7 @@ import software.spool.core.port.bus.Handler;
 import software.spool.core.utils.polling.CancellationToken;
 import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.api.port.source.StreamSource;
-import software.spool.crawler.internal.utils.factory.Normalizer;
+import software.spool.crawler.api.normalizer.Normalizer;
 
 import java.util.ArrayList;
 import java.util.List;

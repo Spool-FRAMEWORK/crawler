@@ -20,7 +20,7 @@ import software.spool.crawler.internal.control.PayloadCapturedHandler;
 import software.spool.crawler.internal.control.PollSourceReachability;
 import software.spool.crawler.internal.control.steps.*;
 import software.spool.crawler.internal.strategy.PollingCrawlerStrategy;
-import software.spool.crawler.internal.utils.factory.Normalizer;
+import software.spool.crawler.api.normalizer.Normalizer;
 
 import java.util.ArrayList;
 import java.util.List;

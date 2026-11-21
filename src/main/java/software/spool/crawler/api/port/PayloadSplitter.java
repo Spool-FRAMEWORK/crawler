@@ -1,7 +1,7 @@
 package software.spool.crawler.api.port;
 
 import software.spool.core.exception.SpoolException;
-import software.spool.crawler.internal.utils.factory.PayloadSplitterFactory;
+import software.spool.crawler.api.normalizer.PayloadSplitterFactory;
 
 import java.util.stream.Stream;
 

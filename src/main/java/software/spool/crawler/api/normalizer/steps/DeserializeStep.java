@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.utils.factory.steps;
+package software.spool.crawler.api.normalizer.steps;
 
 import software.spool.core.pipeline.Step;
 import software.spool.core.port.serde.PayloadDeserializer;

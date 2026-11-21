@@ -6,7 +6,7 @@ import software.spool.crawler.api.Crawler;
 import software.spool.crawler.api.port.source.PollSource;
 import software.spool.crawler.api.utils.NormalizerFormat;
 import software.spool.crawler.internal.port.decorator.SafePollSource;
-import software.spool.crawler.internal.utils.factory.Normalizer;
+import software.spool.crawler.api.normalizer.Normalizer;
 
 public class PollingCrawlerBuilder<I> {
 

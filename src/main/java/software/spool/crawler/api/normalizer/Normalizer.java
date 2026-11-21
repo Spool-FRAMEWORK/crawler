@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.utils.factory;
+package software.spool.crawler.api.normalizer;
 
 import software.spool.core.adapter.logging.LoggerFactory;
 import software.spool.core.pipeline.Pipeline;

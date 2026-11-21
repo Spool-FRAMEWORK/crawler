@@ -1,4 +1,4 @@
-package software.spool.crawler.internal.utils.factory;
+package software.spool.crawler.api.normalizer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import software.spool.core.exception.SplitException;
