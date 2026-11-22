@@ -224,10 +224,11 @@ Crawler crawler = CrawlerBuilderFactory.poll(source)
 |---|---|
 | **`PollSource<R>`** | Interface you implement to fetch raw data. Provides `fetch()`, `open()`, `close()`, `sourceId()`. |
 | **`StreamSource<R>`** | Interface for push-based sources (Kafka, WebSocket…). |
+| **`WebhookCrawlerBuilder`** | A crawler that receives its records on the node's HTTP server, authenticated, with a body limit. |
 | **`StandardNormalizer`** | Built-in normalizer formats: `JSON_ARRAY`, `JSON_OBJECT`, `YAML_ARRAY`, `RESULT_SET`, `IN_MEMORY`. |
 | **`NormalizerFormat<P>`** | Functional interface for custom normalization pipelines. |
 | **`CrawlerPorts`** | Bundles `InboxWriter` and `EventPublisher`. |
-| **`CrawlerBuilderFactory`** | DSL entry point. Returns a `PollingCrawlerBuilder` or `StreamCrawlerBuilder`. |
+| **`CrawlerBuilderFactory`** | DSL entry point. Returns a `PollingCrawlerBuilder`, a `StreamCrawlerBuilder` or a `WebhookCrawlerBuilder`. |
 | **`SpoolNode`** | Assembles and starts modules. `SpoolNode.create().register(crawler).start()`. |
 
 ---

@@ -21,6 +21,10 @@ public final class CrawlerBuilderFactory {
         return new Configuration().stream(source);
     }
 
+    public static WebhookCrawlerBuilder webhook(String sourceId) {
+        return new Configuration().webhook(sourceId);
+    }
+
     public static Configuration watchdog(String url, String moduleId) {
         return new Configuration(url, moduleId);
     }
@@ -44,6 +48,10 @@ public final class CrawlerBuilderFactory {
 
         public <R> StreamCrawlerBuilder<R> stream(StreamSource<R> source) {
             return new StreamCrawlerBuilder<>(source, buildHeartbeat(watchdogUrl, moduleId));
+        }
+
+        public WebhookCrawlerBuilder webhook(String sourceId) {
+            return new WebhookCrawlerBuilder(sourceId, buildHeartbeat(watchdogUrl, moduleId));
         }
     }
 

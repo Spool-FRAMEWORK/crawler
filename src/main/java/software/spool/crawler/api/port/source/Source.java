@@ -15,9 +15,9 @@ import software.spool.core.exception.SpoolException;
  * <p>
  * This is an SPI interface and is not intended for direct implementation
  * by end users. Use the higher-level
- * {@link PollSource},
- * {@link StreamSource}, or
- * {@link WebhookSource} instead.
+ * {@link PollSource} or
+ * {@link StreamSource} instead. A webhook receives its records instead of reading them from a source: see
+ * {@code CrawlerBuilderFactory.webhook}.
  * </p>
  */
 public interface Source<R> extends AutoCloseable {

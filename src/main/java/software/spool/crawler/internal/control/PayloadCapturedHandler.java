@@ -19,7 +19,7 @@ import java.util.Map;
  * <p>A duplicate is the inbox refusing an event it already has, which is not a failure, so it is counted as its own
  * status and does not add to the errors counter. It is still routed, and its latency is still recorded.</p>
  */
-public class PayloadCapturedHandler implements Handler<byte[]> {
+public class PayloadCapturedHandler implements Handler<byte[]>, PayloadCapture {
     private final Pipeline<PipelineContext, PipelineContext> pipeline;
     private final String sourceId;
     private final MediaType mediaType;
@@ -40,11 +40,17 @@ public class PayloadCapturedHandler implements Handler<byte[]> {
 
     @Override
     public void handle(byte[] payload) {
+        capture(payload);
+    }
+
+    @Override
+    public CaptureOutcome capture(byte[] payload) {
         PipelineContext initial = PipelineContext.empty()
                 .with(CapturedPayloadKeys.SOURCE_ID, sourceId)
                 .with(CapturedPayloadKeys.MEDIA_TYPE, mediaType)
                 .with(CapturedPayloadKeys.PAYLOAD, payload);
         long start = System.nanoTime();
+        CaptureOutcome[] outcome = {CaptureOutcome.STORED};
         pipeline.execute(initial)
                 .peek(ctx -> {
                     long elapsed = (System.nanoTime() - start) / 1_000_000;
@@ -54,10 +60,12 @@ public class PayloadCapturedHandler implements Handler<byte[]> {
                 .peekError(e -> {
                     long elapsed = (System.nanoTime() - start) / 1_000_000;
                     boolean duplicate = e instanceof DuplicateEventException;
+                    outcome[0] = duplicate ? CaptureOutcome.DUPLICATE : CaptureOutcome.FAILED;
                     eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, duplicate ? "duplicate" : "error"));
                     if (!duplicate) errorsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     latencyTimer.record(elapsed, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     errorRouter.dispatch(e);
                 });
+        return outcome[0];
     }
 }

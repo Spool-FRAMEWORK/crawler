@@ -57,13 +57,6 @@ class StreamCrawlerAssembler<I> {
     }
 
     private Pipeline<PipelineContext, PipelineContext> initializePipeline(LongHistogramMetric sizeHistogram) {
-        EventMappingSpecification spec = config.mappingFacet.spec();
-        return Pipeline.<PipelineContext>start()
-                .add(new ObservedStep<>("measure-size", new PayloadSizeMetricStep(sizeHistogram)))
-                .add(new ObservedStep<>("build-captured", new BuildCapturedEventStep()))
-                .add(new ObservedStep<>("emit-domain-event", new PublishDomainEventStep(spec.buildEmitter(config.sourceFacet.ports.bus()))))
-                .add(new ObservedStep<>("publish-captured", new PublishCapturedEvent(config.sourceFacet.ports.trackedBus())))
-                .add(new ObservedStep<>("store-envelope", new BuildAndStoreEnvelopeStep(config.sourceFacet.ports.trackedInboxWriter(), RecordSerializerFactory.record(), spec.partitionAttributes())))
-                .add(new ObservedStep<>("publish-stored", new PublishEnvelopeStoredStep(config.sourceFacet.ports.bus())));
+        return CapturePipeline.of(config.mappingFacet.spec(), config.sourceFacet.ports, sizeHistogram);
     }
 }
