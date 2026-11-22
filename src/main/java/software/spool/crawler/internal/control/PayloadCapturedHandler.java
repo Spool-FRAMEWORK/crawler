@@ -7,14 +7,17 @@ import software.spool.core.pipeline.PipelineContext;
 import software.spool.core.port.bus.Handler;
 import software.spool.core.port.metrics.MetricsRegistry;
 import software.spool.core.port.metrics.SpoolMetrics;
+import software.spool.core.resilience.exception.CircuitBreakerOpenException;
 import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.internal.control.steps.CapturedPayloadKeys;
 
+import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Runs the pipeline for every captured payload and counts what happened to it: {@code success}, {@code error} or
- * {@code duplicate}.
+ * {@code duplicate}, or {@code waiting} when the circuit of the inbox is open and says until when.
  *
  * <p>A duplicate is the inbox refusing an event it already has, which is not a failure, so it is counted as its own
  * status and does not add to the errors counter. It is still routed, and its latency is still recorded.</p>
@@ -59,6 +62,13 @@ public class PayloadCapturedHandler implements Handler<byte[]>, PayloadCapture {
                 })
                 .peekError(e -> {
                     long elapsed = (System.nanoTime() - start) / 1_000_000;
+                    Optional<Instant> waitUntil = e instanceof CircuitBreakerOpenException open ? open.openUntil() : Optional.empty();
+                    if (waitUntil.isPresent()) {
+                        outcome[0] = CaptureOutcome.waitingUntil(waitUntil.get());
+                        eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, "waiting"));
+                        latencyTimer.record(elapsed, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
+                        return;
+                    }
                     boolean duplicate = e instanceof DuplicateEventException;
                     outcome[0] = duplicate ? CaptureOutcome.DUPLICATE : CaptureOutcome.FAILED;
                     eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, duplicate ? "duplicate" : "error"));

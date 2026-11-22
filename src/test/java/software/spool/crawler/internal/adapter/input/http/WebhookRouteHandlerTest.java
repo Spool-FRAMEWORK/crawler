@@ -10,6 +10,9 @@ import software.spool.crawler.api.utils.StandardNormalizer;
 import software.spool.crawler.internal.control.CaptureOutcome;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class WebhookRouteHandlerTest {
     private static final MediaType JSON = MediaType.of("application/json");
+    private static final Instant NOW = Instant.parse("2026-11-22T10:00:00Z");
 
     private final List<String> captured = new ArrayList<>();
 
@@ -73,11 +77,37 @@ class WebhookRouteHandlerTest {
         assertThat(response.status()).isEqualTo(503);
     }
 
+    @Test
+    void handle_whileTheInboxAsksToWait_answers503WithTheSecondsToWaitRoundedUp() {
+        HttpResponse response = handlerCapturingAs(CaptureOutcome.waitingUntil(NOW.plusMillis(29_200)))
+                .handle(request("application/json", "[{\"id\":\"a-1\"}]"), Caller.anonymous());
+
+        assertThat(response.status()).isEqualTo(503);
+        assertThat(response.headers()).containsEntry("Retry-After", "30");
+        assertThat(new String(response.body(), StandardCharsets.UTF_8)).contains("30");
+    }
+
+    @Test
+    void handle_whileTheInboxAsksToWaitLessThanASecond_answersAtLeastOneSecond() {
+        HttpResponse response = handlerCapturingAs(CaptureOutcome.waitingUntil(NOW.plusMillis(200)))
+                .handle(request("application/json", "[{\"id\":\"a-1\"}]"), Caller.anonymous());
+
+        assertThat(response.headers()).containsEntry("Retry-After", "1");
+    }
+
+    @Test
+    void handle_inboxThatFails_answersWithoutRetryAfter() {
+        HttpResponse response = handlerCapturingAs(CaptureOutcome.FAILED)
+                .handle(request("application/json", "[{\"id\":\"a-1\"}]"), Caller.anonymous());
+
+        assertThat(response.headers()).doesNotContainKey("Retry-After");
+    }
+
     private WebhookRouteHandler handlerCapturingAs(CaptureOutcome outcome) {
         return new WebhookRouteHandler(StandardNormalizer.JSON_ARRAY.pipelineWith(List.of(), null), JSON, payload -> {
             captured.add(new String(payload, StandardCharsets.UTF_8));
             return outcome;
-        });
+        }, Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     private static HttpRequest request(String contentType, String body) {

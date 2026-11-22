@@ -7,11 +7,14 @@ import software.spool.core.model.vo.MediaType;
 import software.spool.core.pipeline.Pipeline;
 import software.spool.core.pipeline.PipelineContext;
 import software.spool.core.port.metrics.MetricsRegistry;
+import software.spool.core.resilience.exception.CircuitBreakerOpenException;
 import software.spool.core.utils.routing.ErrorRouter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,6 +73,27 @@ class PayloadCapturedHandlerTest {
         assertThat(events).containsExactly(Map.of("source", "source-1", "status", "error"));
         assertThat(errors).containsExactly(Map.of("source", "source-1"));
         assertThat(routed).containsExactly(failure);
+    }
+
+    @Test
+    void aPayloadRejectedByTheOpenCircuitOfTheInbox_waitsUntilThenAndIsNeitherAnErrorNorRouted() {
+        Instant until = Instant.parse("2026-11-22T10:00:30Z");
+
+        CaptureOutcome outcome = handlerThatEndsWith(new CircuitBreakerOpenException("inbox", Optional.of(until)))
+                .capture("payload".getBytes());
+
+        assertThat(outcome).isEqualTo(CaptureOutcome.waitingUntil(until));
+        assertThat(events).containsExactly(Map.of("source", "source-1", "status", "waiting"));
+        assertThat(errors).isEmpty();
+        assertThat(routed).isEmpty();
+    }
+
+    @Test
+    void aPayloadRejectedByACircuitThatSaysNoTime_failsAsBefore() {
+        CaptureOutcome outcome = handlerThatEndsWith(new CircuitBreakerOpenException("inbox"))
+                .capture("payload".getBytes());
+
+        assertThat(outcome).isEqualTo(CaptureOutcome.FAILED);
     }
 
     @Test

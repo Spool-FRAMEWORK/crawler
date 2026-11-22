@@ -9,6 +9,9 @@ import software.spool.crawler.api.normalizer.Normalizer;
 import software.spool.crawler.internal.control.CaptureOutcome;
 import software.spool.crawler.internal.control.PayloadCapture;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -16,7 +19,8 @@ import java.util.Optional;
 /**
  * Receives one webhook delivery: checks that its body is of the media type of the source, splits it into records with
  * the source's normalizer and captures each one, as a stream crawler does with each message. A record the inbox
- * already has is not stored again, so a delivery sent twice is accepted both times.
+ * already has is not stored again, so a delivery sent twice is accepted both times. While the circuit of the inbox is
+ * open, a delivery is answered 503 with a Retry-After that says how many seconds to wait.
  */
 public final class WebhookRouteHandler implements HttpRouteHandler {
     private static final String CONTENT_TYPE = "Content-Type";
@@ -25,15 +29,24 @@ public final class WebhookRouteHandler implements HttpRouteHandler {
     private static final int BAD_REQUEST = 400;
     private static final int UNSUPPORTED_MEDIA_TYPE = 415;
     private static final int SERVICE_UNAVAILABLE = 503;
+    private static final String RETRY_AFTER = "Retry-After";
+    private static final long MINIMUM_RETRY_AFTER_SECONDS = 1;
+    private static final long MILLIS_PER_SECOND = 1000;
 
     private final Normalizer<byte[]> normalizer;
     private final MediaType mediaType;
     private final PayloadCapture capture;
+    private final Clock clock;
 
     public WebhookRouteHandler(Normalizer<byte[]> normalizer, MediaType mediaType, PayloadCapture capture) {
+        this(normalizer, mediaType, capture, Clock.systemUTC());
+    }
+
+    public WebhookRouteHandler(Normalizer<byte[]> normalizer, MediaType mediaType, PayloadCapture capture, Clock clock) {
         this.normalizer = normalizer;
         this.mediaType = mediaType;
         this.capture = capture;
+        this.clock = clock;
     }
 
     @Override
@@ -51,6 +64,11 @@ public final class WebhookRouteHandler implements HttpRouteHandler {
         int duplicates = 0;
         for (byte[] record : records) {
             CaptureOutcome outcome = capture.capture(record);
+            if (outcome instanceof CaptureOutcome.Waiting waiting) {
+                long seconds = secondsUntil(waiting.until());
+                return error(SERVICE_UNAVAILABLE, "the inbox takes no deliveries for now; send it again in " + seconds + " s")
+                        .withHeader(RETRY_AFTER, String.valueOf(seconds));
+            }
             if (outcome == CaptureOutcome.FAILED) {
                 return error(SERVICE_UNAVAILABLE, "the delivery could not be stored; send it again");
             }
@@ -58,6 +76,11 @@ public final class WebhookRouteHandler implements HttpRouteHandler {
             else duplicates++;
         }
         return HttpResponse.json(ACCEPTED, "{\"stored\":" + stored + ",\"duplicates\":" + duplicates + "}");
+    }
+
+    private long secondsUntil(Instant until) {
+        long millis = Duration.between(clock.instant(), until).toMillis();
+        return Math.max(MINIMUM_RETRY_AFTER_SECONDS, (millis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND);
     }
 
     private static String withoutParameters(String contentType) {
