@@ -1,5 +1,6 @@
 package software.spool.crawler.api;
 
+import software.spool.core.port.health.HealthProvider;
 import software.spool.core.port.http.HttpRoute;
 
 import software.spool.core.model.spool.SpoolModule;
@@ -37,6 +38,7 @@ public class Crawler implements SpoolModule {
         this.strategy = strategy;
         this.errorRouter = errorRouter;
         this.heartBeat = heartBeat;
+        heartBeat.reportFrom(this);
         this.probes = probes;
         this.token = CancellationToken.NOOP;
     }
@@ -65,6 +67,11 @@ public class Crawler implements SpoolModule {
     @Override
     public Collection<HttpRoute> routes() {
         return routes;
+    }
+
+    @Override
+    public void reportHealthFrom(HealthProvider health) {
+        heartBeat.reportFrom(health);
     }
 
     @Override

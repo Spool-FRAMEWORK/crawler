@@ -1,5 +1,8 @@
 package software.spool.crawler.api;
 
+import software.spool.core.port.health.ModuleHealthPayload;
+import software.spool.core.port.health.HealthProvider;
+import software.spool.core.model.watchdog.ModuleIdentity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.spool.core.model.spool.SpoolNode;
@@ -77,5 +80,38 @@ class CrawlerTest {
     void checkHealth_whenRunning_returnsNotDegraded() {
         crawler.start(permit);
         assertThat(crawler.checkHealth().status()).isNotEqualTo(HealthStatus.DEGRADED);
+    }
+
+    @Test
+    void heartbeat_readsTheHealthOfTheModuleUntilSomethingThatWrapsItTakesOver() {
+        RecordingHeartBeat heartBeat = new RecordingHeartBeat();
+        var module = new Crawler(strategy, new ErrorRouter(), heartBeat, List.of());
+        HealthProvider wrapper = () -> ModuleHealthPayload.healthy("wrapper");
+
+        assertThat(heartBeat.health).isSameAs(module);
+        module.reportHealthFrom(wrapper);
+        assertThat(heartBeat.health).isSameAs(wrapper);
+    }
+
+    private static final class RecordingHeartBeat implements ModuleHeartBeat {
+        private HealthProvider health;
+
+        @Override
+        public ModuleIdentity identity() {
+            return ModuleIdentity.of("module-test");
+        }
+
+        @Override
+        public void reportFrom(HealthProvider health) {
+            this.health = health;
+        }
+
+        @Override
+        public void start() {
+        }
+
+        @Override
+        public void stop() {
+        }
     }
 }
