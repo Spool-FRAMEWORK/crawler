@@ -25,6 +25,11 @@ public final class CrawlerBuilderFactory {
         return new Configuration().webhook(sourceId);
     }
 
+    /** A crawler with the given id and no watchdog, so its health and its heartbeat carry that id. */
+    public static Configuration named(String moduleId) {
+        return new Configuration(null, moduleId);
+    }
+
     public static Configuration watchdog(String url, String moduleId) {
         return new Configuration(url, moduleId);
     }
