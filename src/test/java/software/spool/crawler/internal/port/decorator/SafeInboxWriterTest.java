@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import software.spool.core.exception.InboxWriteException;
 import software.spool.core.model.EnvelopeStatus;
 import software.spool.core.model.vo.*;
+import software.spool.core.resilience.exception.CircuitBreakerOpenException;
 
 import java.time.Instant;
 
@@ -29,6 +30,13 @@ class SafeInboxWriterTest {
         assertThatThrownBy(() -> writer.receive(anyEnvelope()))
             .isInstanceOf(InboxWriteException.class)
             .hasMessageContaining("db error");
+    }
+
+    @Test
+    void receive_whileTheCircuitOfTheInboxIsOpen_letsThatThroughAsItIs() {
+        SafeInboxWriter writer = SafeInboxWriter.of(env -> { throw new CircuitBreakerOpenException("inbox"); });
+
+        assertThatThrownBy(() -> writer.receive(anyEnvelope())).isInstanceOf(CircuitBreakerOpenException.class);
     }
 
     private static Envelope anyEnvelope() {
