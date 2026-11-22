@@ -1,9 +1,9 @@
 package software.spool.crawler.internal.strategy;
 
 import org.junit.jupiter.api.Test;
+import software.spool.core.model.schedule.Schedule;
 import software.spool.core.utils.polling.CancellationToken;
 import software.spool.core.utils.polling.PollingConfiguration;
-import software.spool.core.utils.polling.PollingPolicy;
 import software.spool.core.utils.routing.ErrorRouter;
 import software.spool.crawler.api.port.source.PollSource;
 import software.spool.crawler.api.normalizer.Normalizer;
@@ -25,11 +25,11 @@ class PollingCrawlerStrategyTest {
         Normalizer<String> normalizer = mock(Normalizer.class);
         when(normalizer.normalize(any())).thenReturn(Stream.empty());
         PollingConfiguration twoCycles = new PollingConfiguration(
-                (task, policy, token) -> {
+                (task, schedule, token) -> {
                     task.run();
                     task.run();
                 },
-                PollingPolicy.every(Duration.ofSeconds(1)));
+                Schedule.every(Duration.ofSeconds(1)));
         PollingCrawlerStrategy<String> strategy =
                 new PollingCrawlerStrategy<>(source, normalizer, payload -> {}, twoCycles, new ErrorRouter());
 

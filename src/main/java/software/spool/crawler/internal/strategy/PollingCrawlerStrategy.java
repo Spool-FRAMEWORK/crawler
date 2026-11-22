@@ -40,7 +40,7 @@ public class PollingCrawlerStrategy<I> implements CrawlerStrategy {
                             .forEach(itemmCapturedHandler::handle);
                     } catch (Exception e) { errorRouter.dispatch(e); }
                 },
-                pollingConfiguration.policy(),
+                pollingConfiguration.schedule(),
                 token
         );
     }
