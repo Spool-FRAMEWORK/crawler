@@ -159,6 +159,24 @@ Crawler crawler = CrawlerBuilderFactory.poll(source)
 
 ---
 
+### Records Identified by Some of Their Fields
+
+By default a record is stored once by a hash of the source and the whole record. An `IdempotencyKeySchema` names the
+fields that identify it instead, so a field that changes on every poll does not make the same record look new. A record
+without one of the fields is rejected and reported to the error router, or keyed by the whole record with
+`WhenFieldIsMissing.WHOLE_RECORD`. A webhook stores the rest of the delivery and counts it as `rejected` in its answer.
+
+```java
+Crawler crawler = CrawlerBuilderFactory.poll(source)
+        .source()
+            .ports(ports)
+            .identifyingRecordsWith(IdempotencyKeySchema.of(List.of("id", "meta.version")))
+            .and()
+        .createWith(StandardNormalizer.JSON_ARRAY);
+```
+
+---
+
 ### Domain Event Mapping
 
 Automatically deserialize each captured record into a domain event and emit it on the bus.
