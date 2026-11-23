@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.crawler.api.port.WhenQuarantined;
 import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.authentication.RequestAuthenticator;
@@ -21,6 +22,7 @@ public class WebhookSourceFacet extends CrawlerFacet<WebhookCrawlerBuilder> {
     String rootPath;
     MediaType mediaType;
     IdempotencyKeySchema idempotencyKeySchema = IdempotencyKeySchema.wholeRecord();
+    WhenQuarantined whenQuarantined = WhenQuarantined.KEEP;
     String path;
     RequestAuthenticator authenticator;
     String role;
@@ -78,6 +80,15 @@ public class WebhookSourceFacet extends CrawlerFacet<WebhookCrawlerBuilder> {
      */
     public WebhookSourceFacet identifyingRecordsWith(IdempotencyKeySchema idempotencyKeySchema) {
         this.idempotencyKeySchema = Objects.requireNonNull(idempotencyKeySchema, "idempotencyKeySchema is required");
+        return this;
+    }
+
+    /**
+     * What to do with a capture whose key is in quarantine in the inbox: refuse it, or let one with another payload
+     * take its place (ADR-032).
+     */
+    public WebhookSourceFacet whenQuarantined(WhenQuarantined whenQuarantined) {
+        this.whenQuarantined = Objects.requireNonNull(whenQuarantined, "whenQuarantined is required");
         return this;
     }
 

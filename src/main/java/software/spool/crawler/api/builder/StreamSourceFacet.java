@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.crawler.api.port.WhenQuarantined;
 import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.serde.EnrichmentRule;
@@ -15,6 +16,7 @@ public class StreamSourceFacet<I> extends CrawlerFacet<StreamCrawlerBuilder<I>> 
     String rootPath;
     MediaType mediaType;
     IdempotencyKeySchema idempotencyKeySchema = IdempotencyKeySchema.wholeRecord();
+    WhenQuarantined whenQuarantined = WhenQuarantined.KEEP;
 
     StreamSourceFacet(StreamCrawlerBuilder<I> parent) {
         super(parent);
@@ -46,6 +48,15 @@ public class StreamSourceFacet<I> extends CrawlerFacet<StreamCrawlerBuilder<I>> 
      */
     public StreamSourceFacet<I> identifyingRecordsWith(IdempotencyKeySchema idempotencyKeySchema) {
         this.idempotencyKeySchema = Objects.requireNonNull(idempotencyKeySchema, "idempotencyKeySchema is required");
+        return this;
+    }
+
+    /**
+     * What to do with a capture whose key is in quarantine in the inbox: refuse it, or let one with another payload
+     * take its place (ADR-032).
+     */
+    public StreamSourceFacet<I> whenQuarantined(WhenQuarantined whenQuarantined) {
+        this.whenQuarantined = Objects.requireNonNull(whenQuarantined, "whenQuarantined is required");
         return this;
     }
 

@@ -4,12 +4,14 @@ import org.junit.jupiter.api.Test;
 import software.spool.core.exception.DuplicateEventException;
 import software.spool.core.exception.InboxWriteException;
 import software.spool.core.model.event.SourcePayloadCaptured;
+import software.spool.core.model.vo.Envelope;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.pipeline.PipelineContext;
 import software.spool.core.port.health.HealthStatus;
 import software.spool.core.port.health.Tracked;
 import software.spool.crawler.api.port.InboxWriter;
+import software.spool.crawler.api.port.WhenQuarantined;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,6 +75,40 @@ class BuildAndStoreEnvelopeStepTest {
 
         assertThat(writer.probe().status()).isEqualTo(HealthStatus.HEALTHY);
         assertThat(result.require(CapturedPayloadKeys.RECEIVED_KEY)).isEqualTo(KEY);
+    }
+
+    @Test
+    void aSourceThatKeepsWhatIsInQuarantine_storesAsBefore() throws Exception {
+        Tracked<InboxWriter> writer = Tracked.of(replacingWriter(), "inbox-writer");
+
+        PipelineContext result = stepFor(writer).apply(context());
+
+        assertThat(result.require(CapturedPayloadKeys.REPLACED_QUARANTINED)).isFalse();
+    }
+
+    @Test
+    void aSourceThatReplacesWhatIsInQuarantine_saysTheEnvelopeTookThePlaceOfOneInQuarantine() throws Exception {
+        Tracked<InboxWriter> writer = Tracked.of(replacingWriter(), "inbox-writer");
+
+        PipelineContext result = new BuildAndStoreEnvelopeStep(writer, record -> "schema".getBytes(), List.of("id"),
+                WhenQuarantined.REPLACE).apply(context());
+
+        assertThat(result.require(CapturedPayloadKeys.RECEIVED_KEY)).isEqualTo(KEY);
+        assertThat(result.require(CapturedPayloadKeys.REPLACED_QUARANTINED)).isTrue();
+    }
+
+    private static InboxWriter replacingWriter() {
+        return new InboxWriter() {
+            @Override
+            public IdempotencyKey receive(Envelope envelope) {
+                return KEY;
+            }
+
+            @Override
+            public Receipt receiveReplacingQuarantined(Envelope envelope) {
+                return Receipt.replacedQuarantined(KEY);
+            }
+        };
     }
 
     private static BuildAndStoreEnvelopeStep stepFor(Tracked<InboxWriter> writer) {

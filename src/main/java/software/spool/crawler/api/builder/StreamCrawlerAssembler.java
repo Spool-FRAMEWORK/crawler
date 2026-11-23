@@ -57,6 +57,6 @@ class StreamCrawlerAssembler<I> {
     }
 
     private Pipeline<PipelineContext, PipelineContext> initializePipeline(LongHistogramMetric sizeHistogram) {
-        return CapturePipeline.of(config.mappingFacet.spec(), config.sourceFacet.ports, config.sourceFacet.idempotencyKeySchema, sizeHistogram);
+        return CapturePipeline.of(config.mappingFacet.spec(), config.sourceFacet.ports, config.sourceFacet.idempotencyKeySchema, config.sourceFacet.whenQuarantined, sizeHistogram);
     }
 }

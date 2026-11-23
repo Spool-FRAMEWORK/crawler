@@ -6,6 +6,8 @@ import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.Envelope;
 import software.spool.crawler.api.port.InboxWriter;
 
+import java.util.function.Supplier;
+
 /**
  * Decorator for {@link InboxWriter} that normalises unchecked exceptions into
  * typed {@link InboxWriteException} instances.
@@ -34,8 +36,17 @@ public class SafeInboxWriter implements InboxWriter {
 
     @Override
     public IdempotencyKey receive(Envelope envelope) throws InboxWriteException {
+        return safely(() -> inbox.receive(envelope));
+    }
+
+    @Override
+    public Receipt receiveReplacingQuarantined(Envelope envelope) throws InboxWriteException {
+        return safely(() -> inbox.receiveReplacingQuarantined(envelope));
+    }
+
+    private static <T> T safely(Supplier<T> write) {
         try {
-            return inbox.receive(envelope);
+            return write.get();
         } catch (SpoolException e) {
             throw e;
         } catch (Exception e) {

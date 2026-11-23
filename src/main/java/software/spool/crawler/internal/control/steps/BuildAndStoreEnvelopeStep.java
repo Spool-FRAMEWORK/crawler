@@ -8,6 +8,7 @@ import software.spool.core.pipeline.Step;
 import software.spool.core.port.health.Tracked;
 import software.spool.core.port.serde.RecordSerializer;
 import software.spool.crawler.api.port.InboxWriter;
+import software.spool.crawler.api.port.WhenQuarantined;
 import software.spool.crawler.internal.utils.TypedDomainMapping;
 
 import javax.management.AttributeNotFoundException;
@@ -19,15 +20,23 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
     private final Tracked<InboxWriter> trackedInboxWriter;
     private final RecordSerializer<PartitionKeySchema> serializer;
     private final List<String> defaultPartitionAttributes;
+    private final WhenQuarantined whenQuarantined;
 
     public BuildAndStoreEnvelopeStep(Tracked<InboxWriter> trackedInboxWriter, RecordSerializer<PartitionKeySchema> serializer, List<String> defaultPartitionAttributes) {
+        this(trackedInboxWriter, serializer, defaultPartitionAttributes, WhenQuarantined.KEEP);
+    }
+
+    public BuildAndStoreEnvelopeStep(Tracked<InboxWriter> trackedInboxWriter, RecordSerializer<PartitionKeySchema> serializer,
+                                     List<String> defaultPartitionAttributes, WhenQuarantined whenQuarantined) {
         this.trackedInboxWriter = trackedInboxWriter;
         this.serializer = serializer;
         this.defaultPartitionAttributes = defaultPartitionAttributes;
+        this.whenQuarantined = whenQuarantined;
     }
 
     /**
-     * Stores the envelope in the inbox and keeps its key in the context.
+     * Stores the envelope in the inbox and keeps its key in the context, and whether it took the place of one in
+     * quarantine, which only a source that replaces what is in quarantine does.
      *
      * <p>A duplicate is rethrown as {@link DuplicateEventException} but is not a failure of the writer: the inbox
      * answered and refused the envelope on purpose, so the tracked writer is recorded as working. Any other
@@ -36,11 +45,12 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
     @Override
     public PipelineContext apply(PipelineContext ctx) throws AttributeNotFoundException {
         try {
-            IdempotencyKey key = trackedInboxWriter.get().receive(buildEnvelope(ctx));
-            if (key == null)
+            InboxWriter.Receipt receipt = store(buildEnvelope(ctx));
+            if (receipt.key() == null)
                 throw new DuplicateEventException(ctx.require(CapturedPayloadKeys.CAPTURED_EVENT).idempotencyKey());
             trackedInboxWriter.recordSuccess();
-            return ctx.with(CapturedPayloadKeys.RECEIVED_KEY, key);
+            return ctx.with(CapturedPayloadKeys.RECEIVED_KEY, receipt.key())
+                    .with(CapturedPayloadKeys.REPLACED_QUARANTINED, receipt.replacedQuarantined());
         } catch (DuplicateEventException e) {
             trackedInboxWriter.recordSuccess();
             throw e;
@@ -48,6 +58,12 @@ public class BuildAndStoreEnvelopeStep implements Step<PipelineContext, Pipeline
             trackedInboxWriter.recordFailure(e.getMessage());
             throw e;
         }
+    }
+
+    private InboxWriter.Receipt store(Envelope envelope) {
+        return whenQuarantined == WhenQuarantined.REPLACE
+                ? trackedInboxWriter.get().receiveReplacingQuarantined(envelope)
+                : InboxWriter.Receipt.stored(trackedInboxWriter.get().receive(envelope));
     }
 
     private Envelope buildEnvelope(PipelineContext ctx) throws AttributeNotFoundException {

@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.crawler.internal.control.steps.PublishQuarantinedEnvelopeReplacedStep;
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
 import software.spool.core.adapter.otel.OpenTelemetryMetricsRegistry;
 import software.spool.core.pipeline.ObservedStep;
@@ -72,7 +73,10 @@ class PollingCrawlerAssembler<I> {
                 .add(new ObservedStep<>("store-envelope",
                         new BuildAndStoreEnvelopeStep(config.sourceFacet.ports.trackedInboxWriter(),
                                 RecordSerializerFactory.record(),
-                                spec.partitionAttributes())))
+                                spec.partitionAttributes(),
+                                config.sourceFacet.whenQuarantined)))
+                .add(new ObservedStep<>("publish-replaced",
+                        new PublishQuarantinedEnvelopeReplacedStep(config.sourceFacet.ports.bus())))
                 .add(new ObservedStep<>("publish-stored", new PublishEnvelopeStoredStep(config.sourceFacet.ports.bus())));
     }
 }

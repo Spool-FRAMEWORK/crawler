@@ -17,4 +17,5 @@ public final class CapturedPayloadKeys {
     public static final ContextKey<SourcePayloadCaptured> CAPTURED_EVENT = ContextKey.of("capturedEvent");
     public static final ContextKey<Optional<TypedDomainMapping>> DOMAIN_MAPPING = ContextKey.of("domainMapping");
     public static final ContextKey<IdempotencyKey> RECEIVED_KEY = ContextKey.of("receivedKey");
+    public static final ContextKey<Boolean> REPLACED_QUARANTINED = ContextKey.of("replacedQuarantined");
 }

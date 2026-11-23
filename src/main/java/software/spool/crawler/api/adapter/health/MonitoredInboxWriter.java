@@ -28,4 +28,9 @@ public final class MonitoredInboxWriter implements InboxWriter {
     public IdempotencyKey receive(Envelope envelope) throws InboxWriteException, DuplicateEventException {
         return monitor.call(() -> delegate.receive(envelope), ANSWERS);
     }
+
+    @Override
+    public Receipt receiveReplacingQuarantined(Envelope envelope) throws InboxWriteException, DuplicateEventException {
+        return monitor.call(() -> delegate.receiveReplacingQuarantined(envelope), ANSWERS);
+    }
 }
