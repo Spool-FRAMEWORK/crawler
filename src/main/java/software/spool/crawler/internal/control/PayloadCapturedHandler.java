@@ -1,6 +1,7 @@
 package software.spool.crawler.internal.control;
 
 import software.spool.core.exception.DuplicateEventException;
+import software.spool.core.exception.IdempotencyKeyException;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.pipeline.Pipeline;
 import software.spool.core.pipeline.PipelineContext;
@@ -16,8 +17,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Runs the pipeline for every captured payload and counts what happened to it: {@code success}, {@code error} or
- * {@code duplicate}, or {@code waiting} when the circuit of the inbox is open and says until when.
+ * Runs the pipeline for every captured payload and counts what happened to it: {@code success}, {@code error},
+ * {@code duplicate}, {@code rejected} when the record lacks a field of its idempotency key, or {@code waiting} when the
+ * circuit of the inbox is open and says until when.
  *
  * <p>A duplicate is the inbox refusing an event it already has, which is not a failure, so it is counted as its own
  * status and does not add to the errors counter. It is still routed, and its latency is still recorded.</p>
@@ -70,8 +72,10 @@ public class PayloadCapturedHandler implements Handler<byte[]>, PayloadCapture {
                         return;
                     }
                     boolean duplicate = e instanceof DuplicateEventException;
-                    outcome[0] = duplicate ? CaptureOutcome.DUPLICATE : CaptureOutcome.FAILED;
-                    eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS, duplicate ? "duplicate" : "error"));
+                    boolean rejected = e instanceof IdempotencyKeyException;
+                    outcome[0] = duplicate ? CaptureOutcome.DUPLICATE : rejected ? CaptureOutcome.REJECTED : CaptureOutcome.FAILED;
+                    eventsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId, SpoolMetrics.Attributes.STATUS,
+                            duplicate ? "duplicate" : rejected ? "rejected" : "error"));
                     if (!duplicate) errorsCounter.increment(Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     latencyTimer.record(elapsed, Map.of(SpoolMetrics.Attributes.SOURCE, sourceId));
                     errorRouter.dispatch(e);

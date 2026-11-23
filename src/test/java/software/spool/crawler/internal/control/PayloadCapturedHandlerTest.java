@@ -2,6 +2,7 @@ package software.spool.crawler.internal.control;
 
 import org.junit.jupiter.api.Test;
 import software.spool.core.exception.DuplicateEventException;
+import software.spool.core.exception.IdempotencyKeyException;
 import software.spool.core.model.vo.IdempotencyKey;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.pipeline.Pipeline;
@@ -62,6 +63,18 @@ class PayloadCapturedHandlerTest {
 
         assertThat(routed).containsExactly(duplicate);
         assertThat(latencies).hasSize(1);
+    }
+
+    @Test
+    void aRecordWithoutAFieldOfItsKey_isRejectedCountedAsAnErrorAndRouted() {
+        IdempotencyKeyException withoutField = new IdempotencyKeyException("source-1", "id");
+
+        CaptureOutcome outcome = handlerThatEndsWith(withoutField).capture("payload".getBytes());
+
+        assertThat(outcome).isEqualTo(CaptureOutcome.REJECTED);
+        assertThat(events).containsExactly(Map.of("source", "source-1", "status", "rejected"));
+        assertThat(errors).containsExactly(Map.of("source", "source-1"));
+        assertThat(routed).containsExactly(withoutField);
     }
 
     @Test

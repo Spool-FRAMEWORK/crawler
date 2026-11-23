@@ -32,7 +32,7 @@ class WebhookRouteHandlerTest {
 
         assertThat(response.status()).isEqualTo(202);
         assertThat(captured).hasSize(2);
-        assertThat(new String(response.body(), StandardCharsets.UTF_8)).isEqualTo("{\"stored\":2,\"duplicates\":0}");
+        assertThat(new String(response.body(), StandardCharsets.UTF_8)).isEqualTo("{\"stored\":2,\"duplicates\":0,\"rejected\":0}");
     }
 
     @Test
@@ -41,7 +41,20 @@ class WebhookRouteHandlerTest {
                 .handle(request("application/json", "[{\"id\":\"a-1\"}]"), Caller.anonymous());
 
         assertThat(response.status()).isEqualTo(202);
-        assertThat(new String(response.body(), StandardCharsets.UTF_8)).isEqualTo("{\"stored\":0,\"duplicates\":1}");
+        assertThat(new String(response.body(), StandardCharsets.UTF_8)).isEqualTo("{\"stored\":0,\"duplicates\":1,\"rejected\":0}");
+    }
+
+    @Test
+    void handle_recordThatIsRejected_storesTheOthersAndCountsIt() {
+        HttpResponse response = new WebhookRouteHandler(StandardNormalizer.JSON_ARRAY.pipelineWith(List.of(), null), JSON, payload -> {
+            String record = new String(payload, StandardCharsets.UTF_8);
+            captured.add(record);
+            return record.contains("title") ? CaptureOutcome.REJECTED : CaptureOutcome.STORED;
+        }, Clock.fixed(NOW, ZoneOffset.UTC)).handle(request("application/json", "[{\"title\":\"Ley 1/2026\"},{\"id\":\"a-2\"}]"), Caller.anonymous());
+
+        assertThat(response.status()).isEqualTo(202);
+        assertThat(captured).hasSize(2);
+        assertThat(new String(response.body(), StandardCharsets.UTF_8)).isEqualTo("{\"stored\":1,\"duplicates\":0,\"rejected\":1}");
     }
 
     @Test

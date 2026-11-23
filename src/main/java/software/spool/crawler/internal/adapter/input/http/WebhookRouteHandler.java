@@ -62,6 +62,7 @@ public final class WebhookRouteHandler implements HttpRouteHandler {
         }
         int stored = 0;
         int duplicates = 0;
+        int rejected = 0;
         for (byte[] record : records) {
             CaptureOutcome outcome = capture.capture(record);
             if (outcome instanceof CaptureOutcome.Waiting waiting) {
@@ -73,9 +74,11 @@ public final class WebhookRouteHandler implements HttpRouteHandler {
                 return error(SERVICE_UNAVAILABLE, "the delivery could not be stored; send it again");
             }
             if (outcome == CaptureOutcome.STORED) stored++;
+            else if (outcome == CaptureOutcome.REJECTED) rejected++;
             else duplicates++;
         }
-        return HttpResponse.json(ACCEPTED, "{\"stored\":" + stored + ",\"duplicates\":" + duplicates + "}");
+        return HttpResponse.json(ACCEPTED, "{\"stored\":" + stored + ",\"duplicates\":" + duplicates
+                + ",\"rejected\":" + rejected + "}");
     }
 
     private long secondsUntil(Instant until) {
