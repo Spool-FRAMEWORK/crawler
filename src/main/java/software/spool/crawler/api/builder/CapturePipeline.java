@@ -1,6 +1,7 @@
 package software.spool.crawler.api.builder;
 
 import software.spool.core.adapter.jackson.RecordSerializerFactory;
+import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.pipeline.ObservedStep;
 import software.spool.core.pipeline.Pipeline;
 import software.spool.core.pipeline.PipelineContext;
@@ -23,10 +24,11 @@ final class CapturePipeline {
     }
 
     static Pipeline<PipelineContext, PipelineContext> of(EventMappingSpecification spec, CrawlerPorts ports,
+                                                         IdempotencyKeySchema idempotencyKeySchema,
                                                          LongHistogramMetric sizeHistogram) {
         return Pipeline.<PipelineContext>start()
                 .add(new ObservedStep<>("measure-size", new PayloadSizeMetricStep(sizeHistogram)))
-                .add(new ObservedStep<>("build-captured", new BuildCapturedEventStep()))
+                .add(new ObservedStep<>("build-captured", new BuildCapturedEventStep(idempotencyKeySchema)))
                 .add(new ObservedStep<>("emit-domain-event", new PublishDomainEventStep(spec.buildEmitter(ports.bus()))))
                 .add(new ObservedStep<>("publish-captured", new PublishCapturedEvent(ports.trackedBus())))
                 .add(new ObservedStep<>("store-envelope", new BuildAndStoreEnvelopeStep(ports.trackedInboxWriter(), RecordSerializerFactory.record(), spec.partitionAttributes())))

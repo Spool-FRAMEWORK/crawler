@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.serde.EnrichmentRule;
 import software.spool.crawler.api.utils.CrawlerPorts;
@@ -13,6 +14,7 @@ public class StreamSourceFacet<I> extends CrawlerFacet<StreamCrawlerBuilder<I>> 
     List<EnrichmentRule> enrichRules;
     String rootPath;
     MediaType mediaType;
+    IdempotencyKeySchema idempotencyKeySchema = IdempotencyKeySchema.wholeRecord();
 
     StreamSourceFacet(StreamCrawlerBuilder<I> parent) {
         super(parent);
@@ -35,6 +37,15 @@ public class StreamSourceFacet<I> extends CrawlerFacet<StreamCrawlerBuilder<I>> 
 
     public StreamSourceFacet<I> mediaType(MediaType mediaType) {
         this.mediaType = mediaType;
+        return this;
+    }
+
+    /**
+     * Keys each record by the fields of the schema instead of by the whole record, so a field that changes on every
+     * capture does not make the same record look new.
+     */
+    public StreamSourceFacet<I> identifyingRecordsWith(IdempotencyKeySchema idempotencyKeySchema) {
+        this.idempotencyKeySchema = Objects.requireNonNull(idempotencyKeySchema, "idempotencyKeySchema is required");
         return this;
     }
 

@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.serde.EnrichmentRule;
 import software.spool.core.utils.polling.PollingConfiguration;
@@ -16,6 +17,7 @@ public class SourceFacet<I> extends CrawlerFacet<PollingCrawlerBuilder<I>> {
     String rootPath;
     PollingConfiguration schedule;
     MediaType mediaType;
+    IdempotencyKeySchema idempotencyKeySchema = IdempotencyKeySchema.wholeRecord();
 
     SourceFacet(PollingCrawlerBuilder<I> parent) {
         super(parent);
@@ -44,6 +46,15 @@ public class SourceFacet<I> extends CrawlerFacet<PollingCrawlerBuilder<I>> {
 
     public SourceFacet<I> mediaType(MediaType mediaType) {
         this.mediaType = mediaType;
+        return this;
+    }
+
+    /**
+     * Keys each record by the fields of the schema instead of by the whole record, so a field that changes on every
+     * capture does not make the same record look new.
+     */
+    public SourceFacet<I> identifyingRecordsWith(IdempotencyKeySchema idempotencyKeySchema) {
+        this.idempotencyKeySchema = Objects.requireNonNull(idempotencyKeySchema, "idempotencyKeySchema is required");
         return this;
     }
 

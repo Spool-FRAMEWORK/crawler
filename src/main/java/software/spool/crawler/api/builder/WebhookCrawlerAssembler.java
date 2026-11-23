@@ -32,7 +32,7 @@ class WebhookCrawlerAssembler {
         MetricsRegistry metrics = Objects.requireNonNullElse(config.observabilityFacet.metricsRegistry, new OpenTelemetryMetricsRegistry());
         ErrorRouter errorRouter = Objects.requireNonNullElse(config.observabilityFacet.errorRouter, CrawlerErrorRouter.defaults(source.ports.bus()));
         PayloadCapturedHandler capture = new PayloadCapturedHandler(
-                CapturePipeline.of(config.mappingFacet.spec(), source.ports, metrics.histogram(PAYLOAD_SIZE, "", "By")),
+                CapturePipeline.of(config.mappingFacet.spec(), source.ports, source.idempotencyKeySchema, metrics.histogram(PAYLOAD_SIZE, "", "By")),
                 config.sourceId, source.mediaType, errorRouter,
                 metrics.counter(SpoolMetrics.Crawler.EVENTS_TOTAL, SpoolMetrics.Crawler.EVENTS_TOTAL_DESC, "events"),
                 metrics.counter(SpoolMetrics.Crawler.ERRORS_TOTAL, SpoolMetrics.Crawler.ERRORS_TOTAL_DESC, "errors"),

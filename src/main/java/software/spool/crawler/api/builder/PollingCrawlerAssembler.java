@@ -65,7 +65,7 @@ class PollingCrawlerAssembler<I> {
         EventMappingSpecification spec = config.mappingFacet.spec();
         return Pipeline.<PipelineContext>start()
                 .add(new ObservedStep<>("measure-size", new PayloadSizeMetricStep(sizeHistogram)))
-                .add(new ObservedStep<>("build-captured", new BuildCapturedEventStep()))
+                .add(new ObservedStep<>("build-captured", new BuildCapturedEventStep(config.sourceFacet.idempotencyKeySchema)))
                 .add(new ObservedStep<>("emit-domain-event",
                         new PublishDomainEventStep(spec.buildEmitter(config.sourceFacet.ports.bus()))))
                 .add(new ObservedStep<>("publish-captured", new PublishCapturedEvent(config.sourceFacet.ports.trackedBus())))

@@ -1,5 +1,6 @@
 package software.spool.crawler.api.builder;
 
+import software.spool.core.model.vo.IdempotencyKeySchema;
 import software.spool.core.model.vo.MediaType;
 import software.spool.core.port.authentication.RequestAuthenticator;
 import software.spool.crawler.api.utils.CrawlerPorts;
@@ -19,6 +20,7 @@ public class WebhookSourceFacet extends CrawlerFacet<WebhookCrawlerBuilder> {
     List<EnrichmentRule> enrichRules = List.of();
     String rootPath;
     MediaType mediaType;
+    IdempotencyKeySchema idempotencyKeySchema = IdempotencyKeySchema.wholeRecord();
     String path;
     RequestAuthenticator authenticator;
     String role;
@@ -67,6 +69,15 @@ public class WebhookSourceFacet extends CrawlerFacet<WebhookCrawlerBuilder> {
      */
     public WebhookSourceFacet acceptingAtMost(int bytes) {
         this.maxBodyBytes = bytes;
+        return this;
+    }
+
+    /**
+     * Keys each record by the fields of the schema instead of by the whole record, so a field that changes on every
+     * capture does not make the same record look new.
+     */
+    public WebhookSourceFacet identifyingRecordsWith(IdempotencyKeySchema idempotencyKeySchema) {
+        this.idempotencyKeySchema = Objects.requireNonNull(idempotencyKeySchema, "idempotencyKeySchema is required");
         return this;
     }
 
